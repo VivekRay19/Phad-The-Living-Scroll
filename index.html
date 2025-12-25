@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phad: The Living Scroll</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/framer-motion@10.16.4/dist/framer-motion.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0"></script>
+
+    <link href="https://fonts.googleapis.com/css2?family=Rozha+One&family=Sahitya:wght@400;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-paper: #fdf6e3;
+            --phad-red: #8B0000;
+            --phad-yellow: #f59e0b;
+        }
+        
+        body {
+            margin: 0;
+            background-color: var(--bg-paper);
+            font-family: 'Sahitya', serif;
+            color: #2c0b0e;
+            overflow-x: hidden;
+        }
+
+        .font-display { font-family: 'Rozha One', serif; }
+
+        .texture {
+            position: fixed;
+            inset: 0;
+            background-image: url('https://www.transparenttextures.com/patterns/canvas-orange.png');
+            opacity: 0.5;
+            pointer-events: none;
+            z-index: 100;
+            mix-blend-mode: multiply;
+        }
+
+        .phad-frame {
+            position: fixed;
+            inset: 0;
+            z-index: 9998;
+            pointer-events: none;
+            box-shadow: 
+                inset 0 0 0 12px #8B0000, 
+                inset 0 0 0 20px #f59e0b;
+        }
+
+        @media (min-width: 768px) {
+            .phad-frame {
+                box-shadow: 
+                    inset 0 0 0 25px #8B0000, 
+                    inset 0 0 0 40px #f59e0b; 
+            }
+        }
+
+        .chat-scroll::-webkit-scrollbar { width: 4px; }
+        .chat-scroll::-webkit-scrollbar-thumb { background: #8B0000; border-radius: 4px; }
+        ::-webkit-scrollbar { width: 0px; background: transparent; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+<script type="text/babel">
+        const { useRef, useState, useEffect } = React;
+        const { motion, useScroll, useTransform, AnimatePresence } = window.Motion;
+
+// --- 1. INTEGRATED RESEARCH DATA (Brain of the Chatbot) ---
+        const RESEARCH_DATA = [
+            {
+                topic: "What is Phad Painting?",
+                content: "Phad painting is a traditional folk art form from Rajasthan that combines visual art, oral storytelling, and ritual performance. It is painted on long cloth scrolls and used during night-long performances to narrate heroic tales of local deities. Rather than being decorative objects, Phads historically functioned as sacred storytelling tools.",
+                keywords: "rajasthani folk art ritual painting storytelling scroll traditional indian art"
+            },
+            {
+                topic: "Origins of Phad Tradition",
+                content: "Phad painting originated within specific communities in Rajasthan, especially among the Joshi painter families. These artists created scrolls that were used by Bhopa–Bhopi priest-singer couples during ritual performances. The tradition was deeply rooted in village life and religious devotion.",
+                keywords: "joshi community hereditary artists folk traditions caste-based art history"
+            },
+            {
+                topic: "The Team",
+                content: "This Discover India Program (DIP) project is Group 10 from Flame University. Led by Vivek Ray (GR) and Palak Rajput (Co-GR), the team includes Yuvika Gupta, Karan Divekar, Harshit Singh, Koustav Saha, Divyanshi Jain, Vedant Murmatti, Arushi Rastogi, Sahil Kokare, Soham Mandal, Aayush Oswal, and Aadi Bokriya.",
+                keywords: "team group 10 members creators about made who students flame vivek palak"
+            },
+            {
+                topic: "Role of Bhopa–Bhopi Performers",
+                content: "Bhopa–Bhopi couples were central to the Phad tradition, performing epic narratives through song and storytelling. The Phad scroll acted as a mobile temple, unfolding scene by scene during performances. These performances were communal events that reinforced faith, history, and moral values.",
+                keywords: "oral performance priest singers folk storytelling mobile temple bhopa bhopi"
+            },
+            {
+                topic: "Sacred and Ritual Significance",
+                content: "Traditionally, Phad paintings were treated as sacred objects rather than artworks. They were consecrated before use and only displayed during performances. The paintings were believed to possess spiritual power and were used in healing rituals and community gatherings.",
+                keywords: "sacred art ritual object spiritual practice healing traditions"
+            },
+            {
+                topic: "Cultural Geography of Phad",
+                content: "Phad painting is geographically rooted in central Rajasthan, especially in Bhilwara and Shahpura. These regions have historically supported painter families, performers, and ritual patrons. The art form developed in close relationship with local temples, villages, and festivals.",
+                keywords: "bhilwara shahpura rajasthan folk culture regional art geography location"
+            },
+            {
+                topic: "Cultural Geography of Phad",
+                content: "Phad painting is geographically rooted in central Rajasthan, especially in Bhilwara and Shahpura. These regions have historically supported painter families, performers, and ritual patrons. The art form developed in close relationship with local temples, villages, and festivals.",
+                keywords: "location where is it from bhilwara shahpura rajasthan folk culture regional art geography place origin"
+            },
+            {
+                topic: "Shift from Performance to Product",
+                content: "Over time, Phad painting has shifted from a performative tradition to a standalone art product. Large scrolls have been replaced by smaller framed paintings suitable for sale. This change has reduced the role of storytelling and ritual performance.",
+                keywords: "commodification art market framed paintings tourism art shift"
+            },
+            {
+                topic: "Impact of Commercialization",
+                content: "Commercialization has provided new income opportunities for Phad artists. However, it has also altered themes, sizes, and materials used in the paintings. Market demand often prioritizes visual appeal over narrative depth, creating tension between economic survival and cultural authenticity.",
+                keywords: "market pressure heritage economy cultural loss livelihood commercial"
+            },
+            {
+                topic: "Changing Themes and Styles",
+                content: "Modern Phad paintings often depict non-traditional subjects such as decorative figures, hunting scenes, and contemporary icons. Artists experiment with new colors and formats to attract urban buyers. While this innovation helps sustain the craft, it distances the art from its ritual origins.",
+                keywords: "modernization innovation contemporary themes artistic change"
+            },
+            {
+                topic: "Role of Institutions and NGOs",
+                content: "Institutions such as art schools and NGOs play a major role in shaping Phad today. They provide training and platforms to artists beyond hereditary families. However, they define standards of 'authenticity' that may differ from original community practices.",
+                keywords: "cultural institutions ngos heritage organizations authenticity standards"
+            },
+            {
+                topic: "Heritage Recognition and Policy",
+                content: "Phad painting’s inclusion in heritage lists has increased its visibility. Government and cultural policies aim to protect and promote the art form. However, official recognition often freezes traditions into fixed categories, which can limit organic change.",
+                keywords: "intangible cultural heritage cultural policy gi tag preservation"
+            },
+            {
+                topic: "Youth and the New Generation",
+                content: "Younger Phad artists are exploring digital platforms, social media, and online markets. They balance respect for tradition with the need to remain relevant. Many see innovation as a survival strategy rather than a rejection of heritage.",
+                keywords: "young artists digital promotion social media generational change"
+            },
+            {
+                topic: "Gender and Participation",
+                content: "Traditionally, women participated mainly as Bhopis in performances. Commercialization has opened new spaces for women as painters and independent artists. This shift has changed gender roles within the Phad ecosystem, though recognition gaps remain.",
+                keywords: "women artists gender roles folk performance inclusion"
+            },
+            {
+                topic: "Research Methodology",
+                content: "The study uses qualitative ethnographic methods grounded in fieldwork. Interviews, participant observation, and archival research are key tools. Grounded Theory is used to allow insights to emerge from lived experiences, prioritizing community voices.",
+                keywords: "ethnography qualitative research fieldwork grounded theory methodology research focus"
+            },
+            {
+                topic: "Central Argument",
+                content: "Phad painting stands at a crossroads between survival and loss. Commercial success ensures continuity but risks weakening ritual meaning. The future of Phad depends on how communities negotiate these tensions between tradition and modernity.",
+                keywords: "cultural crossroads preservation vs change identity future of folk art"
+            }
+        ];
+
+        const ASSETS = {
+            logo: "https://www.flame.edu.in/images/logo.png",
+        };
+
+        // --- UPDATED CHATBOT COMPONENT ---
+        const ChatBhopa = ({ yOffset }) => {
+            const [isOpen, setIsOpen] = useState(false);
+            const [input, setInput] = useState("");
+            const [messages, setMessages] = useState([
+                { sender: 'bhopa', text: 'Khamma Ghani! I am the digital Bhopa. Ask me about the Phad, the colors, or our team.' }
+            ]);
+
+            const suggestions = ["What is Phad?", "The Colors", "The Team", "Bhopa & Bhopi"];
+
+            const handleSend = (forcedQuery) => {
+                const rawQuery = forcedQuery || input;
+                if (!rawQuery.trim()) return;
+                
+                setMessages(prev => [...prev, { sender: 'user', text: rawQuery }]);
+                if (!forcedQuery) setInput("");
+
+                // 1. NATURAL LANGUAGE PRE-PROCESSOR
+                // Strips filler words so the bot identifies the keyword "team" or "colors"
+                const cleanQuery = (text) => {
+                    const noise = ["tell", "me", "about", "what", "is", "who", "are", "the", "show", "can", "you", "please", "something", "give"];
+                    return text.toLowerCase()
+                        .split(/\s+/)
+                        .filter(word => !noise.includes(word))
+                        .join(" ");
+                };
+
+                const processedQuery = cleanQuery(rawQuery);
+
+                // 2. SEARCH ENGINE CONFIG
+                const fuse = new Fuse(RESEARCH_DATA, {
+                    keys: [
+                        { name: 'keywords', weight: 0.8 },
+                        { name: 'topic', weight: 0.5 },
+                        { name: 'content', weight: 0.2 }
+                    ],
+                    threshold: 0.4,
+                    distance: 100
+                });
+
+                // 3. EXECUTE SEARCH
+                let result = fuse.search(processedQuery);
+
+                // Fallback to raw query if cleaned search found nothing
+                if (result.length === 0) {
+                    result = fuse.search(rawQuery);
+                }
+
+                setTimeout(() => {
+                    let response = result.length > 0 
+                        ? result[0].item.content 
+                        : "That story is not yet written on my scroll. Try asking about 'the team' or 'the colors'.";
+                    
+                    setMessages(prev => [...prev, { sender: 'bhopa', text: response }]);
+                }, 600);
+            };
+
+            return (
+                <motion.div className="fixed bottom-8 right-16 z-[9999] font-serif" style={{ y: yOffset }}>
+                    <AnimatePresence>
+                        {isOpen && (
+                            <motion.div 
+                                initial={{ opacity: 0, scale: 0.8, y: 20 }}
+                                animate={{ opacity: 1, scale: 1, y: 0 }}
+                                exit={{ opacity: 0, scale: 0.8, y: 20 }}
+                                className="mb-4 w-80 bg-[#fdf6e3] rounded-lg shadow-2xl overflow-hidden border-4 border-double border-[#8B0000]"
+                            >
+                                <div className="bg-[#8B0000] text-[#fdf6e3] p-4 flex justify-between items-center">
+                                    <h3 className="font-display text-lg">The Digital Bhopa</h3>
+                                    <button onClick={() => setIsOpen(false)} className="text-xl">&times;</button>
+                                </div>
+                                
+                                <div className="h-64 overflow-y-auto p-4 chat-scroll bg-orange-50 space-y-3">
+                                    {messages.map((msg, idx) => (
+                                        <div key={idx} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
+                                            <div className={`max-w-[80%] p-3 rounded-lg text-sm ${msg.sender === 'user' ? 'bg-[#8B0000] text-white rounded-br-none' : 'bg-[#e5e7eb] text-[#2c0b0e] border border-[#8B0000]/20 rounded-bl-none'}`}>
+                                                {msg.text}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                <div className="p-3 bg-white border-t border-[#8B0000]/10 flex flex-wrap gap-2 justify-center">
+                                    {suggestions.map((q, i) => (
+                                        <button 
+                                            key={i}
+                                            onClick={() => handleSend(q)}
+                                            className="text-[11px] px-3 py-1.5 rounded-full border border-[#8B0000]/40 text-[#8B0000] hover:bg-[#8B0000] hover:text-white transition-all font-bold"
+                                        >
+                                            {q}
+                                        </button>
+                                    ))}
+                                </div>
+
+                                <div className="p-3 border-t border-[#8B0000]/20 bg-white flex items-center gap-2">
+                                    <input 
+                                        type="text" 
+                                        value={input}
+                                        onChange={(e) => setInput(e.target.value)}
+                                        onKeyPress={(e) => e.key === 'Enter' && handleSend()}
+                                        placeholder="Ask a question..."
+                                        className="flex-1 px-2 py-1 outline-none text-[#8B0000] bg-transparent text-sm border-b border-transparent focus:border-[#8B0000]/30 transition-colors"
+                                    />
+                                    <button 
+                                        onClick={() => handleSend()} 
+                                        className="bg-[#8B0000] text-white rounded-full w-8 h-8 flex items-center justify-center hover:bg-[#c2410c] transition-colors shadow-sm"
+                                    >
+                                        →
+                                    </button>
+                                </div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+
+                    <motion.button 
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        onClick={() => setIsOpen(!isOpen)}
+                        className="w-16 h-16 bg-[#8B0000] rounded-full flex items-center justify-center shadow-lg border-2 border-[#f59e0b] text-[#fdf6e3]"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                        </svg>
+                    </motion.button>
+                </motion.div>
+            );
+        };
+
+        // --- HERO COMPONENT ---
+        const Hero = () => (
+            <section className="h-screen flex flex-col items-center justify-center relative z-10 px-6">
+                <motion.div 
+                    initial={{ scale: 0.9, opacity: 0 }}
+                    whileInView={{ scale: 1, opacity: 1 }}
+                    transition={{ duration: 1.2, ease: "circOut" }}
+                    className="text-center relative max-w-5xl mx-auto"
+                >
+                    <h1 className="font-display text-5xl md:text-7xl text-[#8B0000] leading-tight mb-8 mix-blend-multiply drop-shadow-sm">
+                        Phad Khulta Hai, Par Kahani Kaun Sunaye?
+                    </h1>
+                    <motion.div 
+                        className="mt-12 text-sm uppercase tracking-[0.3em] text-gray-600 font-bold"
+                        animate={{ y: [0, 10, 0] }}
+                        transition={{ repeat: Infinity, duration: 2 }}
+                    >
+                        Scroll Down to Enter the Painting
+                    </motion.div>
+                </motion.div>
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[20rem] md:text-[35rem] font-bold text-[#8B0000] opacity-[0.03] pointer-events-none font-display">10</div>
+            </section>
+        );
+
+        // --- HORIZONTAL SCROLL ---
+        const HorizontalScroll = () => {
+            const targetRef = useRef(null);
+            const { scrollYProgress } = useScroll({ target: targetRef });
+            const x = useTransform(scrollYProgress, [0, 1], ["0%", "-75%"]);
+            const bgMove = useTransform(scrollYProgress, [0, 1], ["0%", "20%"]); 
+
+            return (
+                <section ref={targetRef} className="relative h-[400vh]">
+                    <div className="sticky top-0 h-screen overflow-hidden flex items-center">
+                        <motion.div style={{ x: bgMove }} className="absolute inset-0 bg-orange-50 opacity-50 w-[120vw]">
+                            <div className="absolute bottom-0 w-full h-1/2 bg-gradient-to-t from-[#c2410c]/10 to-transparent"></div>
+                        </motion.div>
+                        <motion.div style={{ x }} className="flex h-full w-[400vw]">
+                            <div className="w-screen h-full flex items-center justify-center p-10 md:p-20 relative border-r border-[#8B0000]/10">
+                                <div className="max-w-2xl text-center md:text-left">
+                                    <h2 className="font-display text-5xl md:text-7xl text-[#8B0000] mb-8">The Keeper of Stories</h2>
+                                    <p className="text-xl md:text-2xl text-gray-800 leading-relaxed font-serif">
+                                        Like the Bhopas of Rajasthan who carry the temple of their deities on a scroll, we embark on a journey to unravel the stories hidden in the sands of time.
+                                    </p>
+                                </div>
+                            </div>
+                            <div className="w-screen h-full flex items-center justify-center p-10 md:p-20 relative border-r border-[#8B0000]/10">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                                    <div className="bg-[#8B0000] text-[#fdf6e3] p-12 rounded-sm shadow-[10px_10px_0px_0px_rgba(194,65,12,1)]">
+                                        <h3 className="font-display text-4xl mb-4">A Digital Phad</h3>
+                                        <p className="text-lg opacity-90 leading-relaxed">
+                                            This website is not just a page; it is a canvas. We are reviving the ancient art of 'Scrollytelling'.
+                                        </p>
+                                    </div>
+                                    <div className="hidden md:block text-7xl font-bold text-[#8B0000] opacity-10 font-display leading-tight">TRADITION<br/>MEETS<br/>TECH</div>
+                                </div>
+                            </div>
+                            <div className="w-screen h-full flex flex-col items-center justify-center p-10 relative border-r border-[#8B0000]/10">
+                                <h2 className="font-display text-[12vw] text-[#8B0000] opacity-5 absolute">DISCOVER</h2>
+                                <div className="relative z-10 bg-[#fdf6e3]/90 p-10 border-4 border-double border-[#8B0000] max-w-3xl text-center backdrop-blur-sm shadow-2xl">
+                                    <p className="text-xl font-bold text-[#c2410c] tracking-widest mb-4">FLAME UNIVERSITY</p>
+                                    <h3 className="text-4xl md:text-5xl font-display text-[#2c0b0e] mb-6">Discover India Program</h3>
+                                    <p className="text-lg text-gray-700">An immersive exploration into the cultural heritage of India, visualized through the lens of modern web design.</p>
+                                </div>
+                            </div>
+                            <div className="w-screen h-full flex items-center justify-center bg-[#8B0000] text-[#fdf6e3] relative">
+                                <div className="text-center">
+                                    <h2 className="font-display text-6xl md:text-8xl mb-8">The Creators</h2>
+                                    <p className="text-2xl opacity-80 font-serif italic">Meet the team behind the project &rarr;</p>
+                                </div>
+                            </div>
+                        </motion.div>
+                    </div>
+                </section>
+            );
+        };
+
+// --- TEAM SECTION (13 MEMBERS) ---
+        const Team = () => {
+            const teamMembers = [
+                { name: "Vivek Ray", role: "Group Representative (GR)", img: "https://via.placeholder.com/400x500" },
+                { name: "Palak Rajput", role: "Co-GR", img: "https://via.placeholder.com/400x500" },
+                { name: "Yuvika Gupta", role: "Team Member", img: "https://via.placeholder.com/400x500" },
+                { name: "Karan Divekar", role: "Team Member", img: "https://via.placeholder.com/400x500" },
+                { name: "Harshit Singh", role: "Team Member", img: "https://via.placeholder.com/400x500" },
+                { name: "Koustav Saha", role: "Team Member", img: "https://via.placeholder.com/400x500" },
+                { name: "Divyanshi Jain", role: "Team Member", img: "https://via.placeholder.com/400x500" },
+                { name: "Vedant Murmatti", role: "Team Member", img: "https://via.placeholder.com/400x500" },
+                { name: "Arushi Rastogi", role: "Team Member", img: "https://via.placeholder.com/400x500" },
+                { name: "Sahil Kokare", role: "Team Member", img: "https://via.placeholder.com/400x500" },
+                { name: "Soham Mandal", role: "Team Member", img: "https://via.placeholder.com/400x500" },
+                { name: "Aayush Oswal", role: "Team Member", img: "https://via.placeholder.com/400x500" },
+                { name: "Aadi Bokriya", role: "Team Member", img: "https://via.placeholder.com/400x500" }
+            ];
+
+            return (
+                <section className="min-h-screen bg-[#2c0b0e] text-[#fdf6e3] py-32 px-6 relative z-20">
+                    <div className="container mx-auto max-w-7xl">
+                        <div className="flex flex-col md:flex-row justify-between items-end mb-24 border-b border-[#fdf6e3]/20 pb-8">
+                            <h2 className="font-display text-7xl">Our Team</h2>
+                            <p className="text-xl opacity-60 mb-2 font-serif tracking-widest uppercase">All Members Of Group 10</p>
+                        </div>
+                        
+                        {/* Grid layout changed to 4 columns for better fit of 13 people */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-16">
+                            {teamMembers.map((member, i) => (
+                                <motion.div 
+                                    key={i} 
+                                    initial={{ opacity: 0, y: 40 }} 
+                                    whileInView={{ opacity: 1, y: 0 }} 
+                                    transition={{ delay: (i % 4) * 0.1, duration: 0.6 }} 
+                                    viewport={{ once: true }} 
+                                    className="group relative"
+                                >
+                                    <div className="aspect-[4/5] bg-[#3d1216] border border-[#fdf6e3]/10 relative overflow-hidden transition-all duration-500 group-hover:border-[#c2410c] shadow-2xl">
+                                        
+                                        {/* IMAGE PLACEHOLDER: Replace src with member.img when you have photos */}
+                                        <img 
+                                            src={member.img} 
+                                            alt={member.name}
+                                            className="w-full h-full object-cover opacity-40 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700 grayscale hover:grayscale-0"
+                                        />
+
+                                        {/* Overlay number (stylized) */}
+                                        <div className="absolute top-4 right-4 text-4xl font-display opacity-10 group-hover:opacity-40 transition-opacity">
+                                            {i + 1}
+                                        </div>
+
+                                        {/* Red gradient hover effect */}
+                                        <div className="absolute inset-0 bg-gradient-to-t from-[#8B0000]/90 via-transparent to-transparent opacity-60 group-hover:opacity-30 transition-opacity duration-500"></div>
+                                    </div>
+
+                                    <div className="mt-6 relative">
+                                        <h3 className="text-2xl font-display mb-1 group-hover:text-[#f59e0b] transition-colors">
+                                            {member.name}
+                                        </h3>
+                                        <p className="text-[#c2410c] font-serif italic text-base uppercase tracking-wider">
+                                            {member.role}
+                                        </p>
+                                    </div>
+                                </motion.div>
+                            ))}
+                        </div>
+                    </div>
+                </section>
+            );
+        };
+        // --- MAIN APP ---
+        const App = () => {
+            const { scrollYProgress } = useScroll();
+            const frameOpacity = useTransform(scrollYProgress, [0, 0.1], [1, 0]);
+            const navY = useTransform(scrollYProgress, [0, 0.1], [60, 0]);
+            const chatY = useTransform(scrollYProgress, [0, 0.1], [-60, 0]);
+
+            return (
+                <div className="w-full">
+                    <div className="texture"></div>
+                    <motion.div className="phad-frame" style={{ opacity: frameOpacity }} />
+                    <motion.div className="fixed top-0 left-0 right-0 h-1.5 bg-[#8B0000] z-[9999] origin-left" style={{ scaleX: scrollYProgress }} />
+                    <motion.nav className="fixed top-8 left-10 z-[9997] mix-blend-multiply" style={{ y: navY }}>
+                    </motion.nav>
+                    <Hero />
+                    <HorizontalScroll />
+                    <Team />
+                    <ChatBhopa yOffset={chatY} />
+                    <footer className="bg-black text-[#fdf6e3] py-12 text-center opacity-90">
+                        <p className="font-serif text-sm tracking-widest opacity-60">INSPIRED BY THE ART OF PHAD PAINTING</p>
+                    </footer>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
