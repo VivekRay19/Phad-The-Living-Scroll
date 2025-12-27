@@ -20,7 +20,7 @@
             margin: 0; 
             font-family: 'Sahitya', serif; 
             overflow: hidden; 
-            height: 100dvh; /* Dynamic height for mobile browsers */
+            height: 100dvh; 
             color: #2c0b0e;
             background: linear-gradient(120deg, #fdf6e3, #fae3c6, #fdf6e3, #efe6d5);
             background-size: 300% 300%;
@@ -66,7 +66,8 @@
         /* Custom Bubbles */
         .bubble-user { background-color: #8B0000; color: white; border-bottom-right-radius: 0; }
         .bubble-bhopa { background-color: white; color: #2c0b0e; border-bottom-left-radius: 0; border: 1px solid rgba(139,0,0,0.1); }
-        
+        .bubble-error { background-color: #fee2e2; color: #991b1b; border: 1px solid #f87171; border-bottom-left-radius: 0; }
+
         .bubble-user::after {
             content: ''; position: absolute; bottom: 0; right: -10px; width: 20px; height: 20px;
             background-color: #8B0000; clip-path: polygon(0 0, 0% 100%, 100% 100%); border-bottom-left-radius: 10px;
@@ -87,9 +88,26 @@
         
         // --- API CONFIGURATION ---
         const API_URL = "https://openrouter.ai/api/v1/chat/completions";
-        // Switched to Google Gemma just in case Mistral is still busy (Rate Limit fix)
-        // You can change this back to "mistralai/mistral-7b-instruct:free" if you prefer
-        const AI_MODEL = "google/gemma-2-9b-it:free"; 
+        
+        // === THE ULTIMATE SURVIVAL LIST ===
+        // We start with Google (strongest infrastructure) then move to smaller models.
+        const AI_MODELS = [
+            "google/gemini-2.0-flash-exp:free",         // 1. Google (Most Reliable)
+            "google/gemma-2-9b-it:free",                // 2. Google Gemma
+            "mistralai/mistral-7b-instruct:free",       // 3. Mistral
+            "meta-llama/llama-3-8b-instruct:free",      // 4. Llama 3
+            "microsoft/phi-3-mini-128k-instruct:free", // 5. Microsoft Phi
+            "huggingfaceh4/zephyr-7b-beta:free",        // 6. Zephyr
+            "openchat/openchat-7b:free",                // 7. OpenChat
+            "liquid/lfm-40b:free",                      // 8. Liquid
+            "gryphe/mythomist-7b:free",                 // 9. Mythomist
+            "nousresearch/hermes-3-llama-3.1-405b:free",// 10. Hermes
+            "meta-llama/llama-3.1-8b-instruct:free",    // 11. Llama 3.1
+            "nvidia/llama-3.1-nemotron-70b-instruct:free", // 12. Nemotron
+            "qwen/qwen-2-7b-instruct:free",             // 13. Qwen
+            "undi95/toppy-m-7b:free",                   // 14. Toppy
+            "cognitivecomputations/dolphin-mixtral-8x7b"// 15. Dolphin
+        ];
 
         // --- BRAIN (System Prompt) ---
         const SYSTEM_PROMPT = `
@@ -162,45 +180,57 @@
 
             useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
 
+            // --- API CALLER ---
             const callAI = async (userText) => {
                 const scrambledKey = "c2stb3ItdjEtZWI2Zjg2NmNhZjVmYjRlZDFhMzliMjNkNjQwZDU0YjUwYzljYTExOTgwYzUwNWM4OWY1ZTRmZGI0ZjQ2NjFlZg=="; 
-                
-                try {
-                    const apiKey = atob(scrambledKey);
-                    const response = await fetch(API_URL, {
-                        method: "POST",
-                        headers: { 
-                            "Content-Type": "application/json", 
-                            "Authorization": `Bearer ${apiKey}`, 
-                            "HTTP-Referer": window.location.href, 
-                            "X-Title": "Bhopa Chat" 
-                        },
-                        body: JSON.stringify({
-                            model: AI_MODEL,
-                            messages: [
-                                { role: "system", content: SYSTEM_PROMPT },
-                                ...messages.map(m => ({ role: m.sender === 'user' ? 'user' : 'assistant', content: m.text })),
-                                { role: "user", content: userText }
-                            ]
-                        })
-                    });
+                const apiKey = atob(scrambledKey);
 
-                    if (!response.ok) {
-                        const errorText = await response.text();
-                        if (response.status === 401) alert("Error: Key Invalid. Please generate a new one.");
-                        else if (response.status === 429) alert("Error: Rate Limit. Wait 30 seconds and try again.");
-                        else alert(`Error ${response.status}: ${errorText}`);
-                        throw new Error(`Error: ${response.status}`);
+                let lastError = "";
+
+                for (const model of AI_MODELS) {
+                    try {
+                        console.log(`Trying: ${model}`);
+                        
+                        // NOTE: Removed "HTTP-Referer" to reduce CORS blocks
+                        const response = await fetch(API_URL, {
+                            method: "POST",
+                            headers: { 
+                                "Content-Type": "application/json", 
+                                "Authorization": `Bearer ${apiKey}`, 
+                                "X-Title": "Bhopa Chat" 
+                            },
+                            body: JSON.stringify({
+                                model: model,
+                                messages: [
+                                    { role: "system", content: SYSTEM_PROMPT },
+                                    ...messages.map(m => ({ role: m.sender === 'user' ? 'user' : 'assistant', content: m.text })),
+                                    { role: "user", content: userText }
+                                ]
+                            })
+                        });
+
+                        if (!response.ok) {
+                            lastError = `Status ${response.status}`;
+                            // If 401 (Unauthorized), the key is definitely dead. No point looping.
+                            if (response.status === 401) throw new Error("API Key Expired/Invalid");
+                            continue; 
+                        }
+
+                        const data = await response.json();
+                        if (data.error) { lastError = data.error.message; continue; }
+                        if (!data.choices || !data.choices[0]) throw new Error("Empty Response");
+                        
+                        // SUCCESS
+                        return data.choices[0].message.content.replace(/<s>/g, "").replace(/<\/s>/g, "").trim();
+
+                    } catch (err) {
+                        console.error(`Error with ${model}:`, err);
+                        if (err.message === "API Key Expired/Invalid") return "⚠️ System Error: The API Key has expired. Please update it.";
+                        lastError = err.message;
                     }
-
-                    const data = await response.json();
-                    if (!data.choices || !data.choices[0]) return "The scroll is blank.";
-                    
-                    return data.choices[0].message.content.replace(/<s>/g, "").replace(/<\/s>/g, "").trim();
-
-                } catch (error) {
-                    return `⚠️ Connection Failed. (${error.message})`;
                 }
+                
+                return `The spirits are silent. \n(Error: ${lastError})\n\nTIP: Try connecting to a Mobile Hotspot. Some WiFi networks block AI sites.`;
             };
 
             const handleSend = async () => {
@@ -210,7 +240,9 @@
                 setMessages(prev => [...prev, { sender: 'user', text: userText }]);
                 setIsTyping(true);
                 const aiResponse = await callAI(userText);
-                setMessages(prev => [...prev, { sender: 'bhopa', text: aiResponse }]);
+                
+                const isError = aiResponse.startsWith("⚠️") || aiResponse.includes("Error:");
+                setMessages(prev => [...prev, { sender: isError ? 'error' : 'bhopa', text: aiResponse }]);
                 setIsTyping(false);
             };
 
@@ -219,7 +251,7 @@
                     <div className="texture"></div>
                     <BackgroundParticles />
                     
-                    {/* Main Card - HEIGHT IS SET TO 80% HERE (h-[80dvh]) */}
+                    {/* Main Card */}
                     <motion.div 
                         initial={{ scale: 0.95, opacity: 0 }} 
                         animate={{ scale: 1, opacity: 1 }} 
@@ -232,7 +264,7 @@
                                 <BhopaAvatar isTyping={isTyping} />
                                 <div>
                                     <h1 className="font-display text-xl md:text-2xl tracking-wide">The Digital Bhopa</h1>
-                                    <p className="font-serif text-xs md:text-sm opacity-80 uppercase tracking-widest">{isTyping ? "Consulting..." : "Storyteller"}</p>
+                                    <p className="font-serif text-xs md:text-sm opacity-80 uppercase tracking-widest">{isTyping ? "Consulting Spirits..." : "Storyteller"}</p>
                                 </div>
                             </div>
                             <a href="index.html" className="text-xs md:text-sm text-[#fdf6e3]/90 border border-[#fdf6e3]/30 px-3 py-1.5 rounded-full z-50 no-underline font-serif">
@@ -249,7 +281,11 @@
                                     animate={{ opacity: 1, y: 0 }}
                                     className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
                                 >
-                                    <div className={`relative max-w-[85%] p-4 rounded-2xl text-base md:text-lg leading-relaxed shadow-sm ${msg.sender === 'user' ? 'bg-[#8B0000] text-white bubble-user' : 'bg-white text-[#2c0b0e] bubble-bhopa'}`}>
+                                    <div className={`relative max-w-[85%] p-4 rounded-2xl text-base md:text-lg leading-relaxed shadow-sm whitespace-pre-wrap ${
+                                        msg.sender === 'user' ? 'bg-[#8B0000] text-white bubble-user' : 
+                                        msg.sender === 'error' ? 'bubble-error' : 
+                                        'bg-white text-[#2c0b0e] bubble-bhopa'
+                                    }`}>
                                         {msg.text}
                                     </div>
                                 </motion.div>
