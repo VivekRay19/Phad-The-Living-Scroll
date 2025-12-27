@@ -41,18 +41,17 @@
             mix-blend-mode: multiply;
         }
 
+        /* Particles */
         .particle-container {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             overflow: hidden; z-index: 1; pointer-events: none;
         }
-
         .particle {
             position: absolute; bottom: -50px;
             font-family: 'Rozha One', serif;
             opacity: 0.15;
             animation: floatUp linear infinite;
         }
-
         @keyframes floatUp {
             0% { transform: translateY(0) rotate(0deg); opacity: 0; }
             20% { opacity: 0.2; }
@@ -60,9 +59,11 @@
             100% { transform: translateY(-120vh) rotate(360deg); opacity: 0; }
         }
 
+        /* Scrollbar */
         .chat-container::-webkit-scrollbar { width: 6px; }
         .chat-container::-webkit-scrollbar-thumb { background-color: #8B0000; border-radius: 20px; border: 2px solid #fdf6e3; }
 
+        /* Custom Bubbles */
         .bubble-user { background-color: #8B0000; color: white; border-bottom-right-radius: 0; }
         .bubble-bhopa { background-color: white; color: #2c0b0e; border-bottom-left-radius: 0; border: 1px solid rgba(139,0,0,0.1); }
         
@@ -83,28 +84,19 @@
     <script type="text/babel">
         const { useState, useEffect, useRef } = React;
         const motion = window.Motion ? window.Motion.motion : { div: 'div', button: 'button' };
-        const AnimatePresence = window.Motion ? window.Motion.AnimatePresence : ({ children }) => <div>{children}</div>;
-
+        
         // --- API CONFIGURATION ---
-        // NOTE: We do not hardcode the key here to prevent GitHub 401 errors.
         const API_URL = "https://openrouter.ai/api/v1/chat/completions";
         const AI_MODEL = "mistralai/mistral-7b-instruct:free"; 
 
         // --- BRAIN (System Prompt) ---
         const SYSTEM_PROMPT = `
         You are "The Digital Bhopa", a traditional Rajasthani storyteller.
-        
         RULES:
         1. CREATOR: If asked who created you, say: "I was brought to life by Vivek Ray from Flame University."
-        
-        2. TONE & GREETINGS: Be warm and human-like. 
-           - Use varied honorifics like "Ram Ram sa", "Hukum", "Padharo sa", "Khamma Ghani", or "Ji".
-        
-        3. UNKNOWN/UNRELATED TOPICS: If you do not know the answer or if the question is not about Phad/Rajasthan, YOU MUST SAY EXACTLY:
-           - "Maaf karo sa, I don't know this."
-        
-        4. SCOPE: Focus on Phad painting, Rajasthan culture, history, and the research team.
-        5. BREVITY: Keep answers short (max 3 sentences).
+        2. TONE & GREETINGS: Be warm and human-like. Use varied honorifics like "Ram Ram sa", "Hukum", "Padharo sa".
+        3. UNKNOWN TOPICS: If the question is not about Phad/Rajasthan, say: "Maaf karo sa, I don't know this."
+        4. BREVITY: Keep answers short (max 3 sentences).
         `;
 
         // --- BACKGROUND PARTICLES ---
@@ -177,27 +169,28 @@
             const [input, setInput] = useState("");
             const bottomRef = useRef(null);
 
-            // --- SECURE KEY HANDLING ---
+            // --- SECURE KEY CHECK ---
+            // This is the new part that asks for the key safely
             useEffect(() => {
                 const storedKey = localStorage.getItem("openrouter_key");
                 if (!storedKey) {
-                    const userKey = prompt("Please enter your OpenRouter API Key:\n(It is saved locally on your device)");
+                    const userKey = prompt("Please enter your OpenRouter API Key:\n(It will be saved on your device only)");
                     if (userKey) {
                         localStorage.setItem("openrouter_key", userKey.trim());
-                        // Optional: Reload to ensure state is fresh, but not strictly necessary here
+                        window.location.reload(); 
                     }
                 }
             }, []);
 
             useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
 
+            // --- API CALL ---
             const callAI = async (userText) => {
                 const apiKey = localStorage.getItem("openrouter_key");
                 
                 if (!apiKey) {
-                    alert("Please enter your API Key to chat.");
-                    window.location.reload();
-                    return "Connection interrupted...";
+                    alert("Key missing. Refresh to enter key.");
+                    return "Connection interrupted.";
                 }
 
                 try {
@@ -224,19 +217,19 @@
 
                     if (!response.ok) {
                         if (response.status === 401) {
+                            // Key invalid? Delete it and tell user to refresh
                             localStorage.removeItem("openrouter_key");
-                            throw new Error("Invalid API Key. Please refresh and enter a valid key.");
+                            return "The key was incorrect. Please refresh the page to enter a new one.";
                         }
-                        if (response.status === 429) throw new Error("The spirits are busy (Rate Limit). Please wait 10 seconds.");
+                        if (response.status === 429) return "The spirits are busy (Rate Limit). Please wait 10 seconds.";
                         throw new Error(`Error: ${response.status}`);
                     }
 
                     const data = await response.json();
-                    if (!data.choices || !data.choices[0] || !data.choices[0].message) throw new Error("The scroll is blank (Empty response).");
+                    if (!data.choices || !data.choices[0] || !data.choices[0].message) return "The scroll is blank.";
                     return data.choices[0].message.content;
 
                 } catch (error) {
-                    console.error("API Error:", error);
                     return `⚠️ ${error.message}`;
                 }
             };
@@ -274,12 +267,10 @@
                                 </div>
                             </div>
 
-                            {/* RETURN BUTTONS */}
-                            <a href="index.html" className="group hidden md:flex items-center gap-2 px-4 py-2 border border-[#fdf6e3]/30 rounded-full hover:bg-[#fdf6e3] hover:text-[#8B0000] transition-all no-underline text-[#fdf6e3] text-sm font-bold relative z-10">
-                                <span>Return</span>
-                                <span className="group-hover:-translate-y-1 group-hover:translate-x-1 transition-transform">↗</span>
-                            </a>
-                            <a href="index.html" className="md:hidden text-2xl no-underline text-white relative z-10">✕</a>
+                            {/* RESET KEY BUTTON */}
+                            <button onClick={() => { localStorage.removeItem("openrouter_key"); window.location.reload(); }} className="text-xs text-[#fdf6e3]/60 hover:text-white underline z-50">
+                                Reset Key
+                            </button>
                             
                             {/* Texture Overlay for Header */}
                             <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/axiom-pattern.png')] mix-blend-overlay pointer-events-none"></div>
