@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Ask Bhopa | AI Powered</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
@@ -16,12 +16,20 @@
     <style>
         :root { --phad-red: #8B0000; --phad-yellow: #f59e0b; }
         
-        body { 
+        /* Fix for mobile height bounce */
+        body, html { 
             margin: 0; 
+            padding: 0;
             font-family: 'Sahitya', serif; 
             overflow: hidden; 
-            height: 100vh; 
-            color: #2c0b0e;
+            height: 100%;
+            width: 100%;
+            position: fixed; /* Locks the body to prevent background scroll */
+        }
+        
+        /* Animated Background */
+        .bg-animated {
+            position: fixed; inset: 0; z-index: -1;
             background: linear-gradient(120deg, #fdf6e3, #fae3c6, #fdf6e3, #efe6d5);
             background-size: 300% 300%;
             animation: bg-breathe 15s ease infinite;
@@ -36,7 +44,7 @@
         .font-display { font-family: 'Rozha One', serif; }
         
         .texture {
-            position: fixed; inset: 0; opacity: 0.3; pointer-events: none; z-index: 2;
+            position: fixed; inset: 0; opacity: 0.3; pointer-events: none; z-index: -1;
             background-image: url('https://www.transparenttextures.com/patterns/canvas-orange.png');
             mix-blend-mode: multiply;
         }
@@ -44,7 +52,7 @@
         /* Particles */
         .particle-container {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            overflow: hidden; z-index: 1; pointer-events: none;
+            overflow: hidden; z-index: 0; pointer-events: none;
         }
         .particle {
             position: absolute; bottom: -50px;
@@ -60,26 +68,26 @@
         }
 
         /* Scrollbar */
-        .chat-container::-webkit-scrollbar { width: 6px; }
-        .chat-container::-webkit-scrollbar-thumb { background-color: #8B0000; border-radius: 20px; border: 2px solid #fdf6e3; }
+        .chat-container::-webkit-scrollbar { width: 4px; }
+        .chat-container::-webkit-scrollbar-thumb { background-color: #8B0000; border-radius: 20px; }
 
         /* Custom Bubbles */
         .bubble-user { background-color: #8B0000; color: white; border-bottom-right-radius: 0; }
         .bubble-bhopa { background-color: white; color: #2c0b0e; border-bottom-left-radius: 0; border: 1px solid rgba(139,0,0,0.1); }
         
         .bubble-user::after {
-            content: ''; position: absolute; bottom: 0; right: -10px; width: 20px; height: 20px;
-            background-color: #8B0000; clip-path: polygon(0 0, 0% 100%, 100% 100%); border-bottom-left-radius: 10px;
+            content: ''; position: absolute; bottom: 0; right: -8px; width: 15px; height: 15px;
+            background-color: #8B0000; clip-path: polygon(0 0, 0% 100%, 100% 100%); 
         }
         .bubble-bhopa::after {
-            content: ''; position: absolute; bottom: 0; left: -10px; width: 20px; height: 20px;
+            content: ''; position: absolute; bottom: 0; left: -8px; width: 15px; height: 15px;
             background-color: #ffffff; border-bottom: 1px solid rgba(139, 0, 0, 0.1);
-            clip-path: polygon(100% 0, 0 100%, 100% 100%); z-index: 1;
+            clip-path: polygon(100% 0, 0 100%, 100% 100%);
         }
     </style>
 </head>
 <body>
-    <div id="root"></div>
+    <div id="root" class="h-full w-full"></div>
 
     <script type="text/babel">
         const { useState, useEffect, useRef } = React;
@@ -94,12 +102,12 @@
         You are "The Digital Bhopa", a traditional Rajasthani storyteller.
         RULES:
         1. CREATOR: If asked who created you, say: "I was brought to life by Vivek Ray from Flame University."
-        2. TONE & GREETINGS: Be warm and human-like. Use varied honorifics like "Hukum", "Padharo sa".
+        2. TONE & GREETINGS: Be warm and human-like. Use varied honorifics like "Ram Ram sa", "Hukum", "Padharo sa".
         3. UNKNOWN TOPICS: If the question is not about Phad/Rajasthan, say: "Maaf karo sa, I don't know this."
         4. BREVITY: Keep answers short (max 3 sentences).
         `;
 
-        // --- PARTICLES & AVATAR COMPONENTS ---
+        // --- PARTICLES ---
         const BackgroundParticles = () => {
             const particles = [
                 { s: "❁", l: 10, d: 15, y: 0, z: 24, c: "#8B0000" },
@@ -107,11 +115,6 @@
                 { s: "•", l: 35, d: 18, y: 5, z: 12, c: "#8B0000" },
                 { s: "✺", l: 50, d: 30, y: 0, z: 30, c: "#d4af37" },
                 { s: "✹", l: 65, d: 22, y: 1, z: 20, c: "#8B0000" },
-                { s: "❁", l: 80, d: 28, y: 4, z: 25, c: "#d4af37" },
-                { s: "•", l: 90, d: 20, y: 8, z: 15, c: "#8B0000" },
-                { s: "⋆", l: 15, d: 35, y: 12, z: 22, c: "#d4af37" },
-                { s: "✹", l: 40, d: 24, y: 15, z: 28, c: "#8B0000" },
-                { s: "✺", l: 70, d: 32, y: 10, z: 16, c: "#d4af37" },
             ];
             return (
                 <div className="particle-container">
@@ -123,28 +126,23 @@
         };
 
         const BhopaAvatar = ({ isTyping }) => (
-            <div className="relative w-16 h-16 flex items-center justify-center flex-shrink-0">
+            <div className="relative w-12 h-12 md:w-16 md:h-16 flex items-center justify-center flex-shrink-0">
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden">
                      <motion.div 
                         animate={{ rotate: 360 }}
                         transition={{ repeat: Infinity, duration: isTyping ? 5 : 20, ease: "linear" }}
-                        className="absolute w-24 h-24 rounded-full border-[4px] border-dashed border-[#8B0000]/40"
+                        className="absolute w-20 h-20 md:w-24 md:h-24 rounded-full border-[4px] border-dashed border-[#8B0000]/40"
                     />
                     <motion.div 
                         animate={{ rotate: -360, scale: isTyping ? [1, 1.1, 1] : 1 }}
                         transition={{ rotate: { repeat: Infinity, duration: isTyping ? 7 : 15, ease: "linear" }, scale: { repeat: Infinity, duration: 1 } }}
-                        className="absolute w-20 h-20 rounded-full border-[3px] border-dotted border-[#f59e0b]/60"
-                    />
-                    <motion.div 
-                        animate={isTyping ? { scale: [1, 1.3, 1], opacity: [0.5, 0.8, 0.5] } : { scale: 1, opacity: 0.3 }}
-                        transition={{ repeat: Infinity, duration: 1.5 }}
-                        className="absolute w-16 h-16 bg-[#f59e0b] rounded-full blur-md"
+                        className="absolute w-16 h-16 md:w-20 md:h-20 rounded-full border-[3px] border-dotted border-[#f59e0b]/60"
                     />
                 </div>
                 <motion.div
                     animate={isTyping ? { y: [0, -3, 0], rotate: [0, 3, -3, 0] } : { y: [0, -2, 0] }}
                     transition={isTyping ? { repeat: Infinity, duration: 0.5 } : { repeat: Infinity, duration: 3, ease: "easeInOut" }}
-                    className="text-4xl relative z-10 drop-shadow-lg"
+                    className="text-2xl md:text-4xl relative z-10 drop-shadow-lg"
                 >
                     👳🏽‍♂️
                 </motion.div>
@@ -152,17 +150,17 @@
         );
 
         const ThinkingIndicator = () => (
-            <div className="flex gap-1.5 p-2 items-center">
-                <motion.div animate={{ y: [0, -6, 0] }} transition={{ repeat: Infinity, duration: 0.6, delay: 0 }} className="w-2.5 h-2.5 rounded-full bg-[#8B0000]" />
-                <motion.div animate={{ y: [0, -6, 0] }} transition={{ repeat: Infinity, duration: 0.6, delay: 0.2 }} className="w-2.5 h-2.5 rounded-full bg-[#f59e0b]" />
-                <motion.div animate={{ y: [0, -6, 0] }} transition={{ repeat: Infinity, duration: 0.6, delay: 0.4 }} className="w-2.5 h-2.5 rounded-full bg-[#8B0000]" />
+            <div className="flex gap-1 p-1 items-center">
+                <motion.div animate={{ y: [0, -4, 0] }} transition={{ repeat: Infinity, duration: 0.6, delay: 0 }} className="w-2 h-2 rounded-full bg-[#8B0000]" />
+                <motion.div animate={{ y: [0, -4, 0] }} transition={{ repeat: Infinity, duration: 0.6, delay: 0.2 }} className="w-2 h-2 rounded-full bg-[#f59e0b]" />
+                <motion.div animate={{ y: [0, -4, 0] }} transition={{ repeat: Infinity, duration: 0.6, delay: 0.4 }} className="w-2 h-2 rounded-full bg-[#8B0000]" />
             </div>
         );
 
         // --- MAIN APP ---
         const ChatApp = () => {
             const [messages, setMessages] = useState([
-                { sender: 'bhopa', text: 'Khamma Ghani! I am the Digital Bhopa. Ask me anything about the Phad.' }
+                { sender: 'bhopa', text: 'Khamma Ghani! I am the Digital Bhopa.' }
             ]);
             const [isTyping, setIsTyping] = useState(false);
             const [input, setInput] = useState("");
@@ -170,135 +168,98 @@
 
             useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
 
-            // --- API CALL ---
             const callAI = async (userText) => {
-                
-                // --- SCRAMBLED KEY (I FIXED THIS FOR YOU) ---
                 const scrambledKey = "c2stb3ItdjEtZWI2Zjg2NmNhZjVmYjRlZDFhMzliMjNkNjQwZDU0YjUwYzljYTExOTgwYzUwNWM4OWY1ZTRmZGI0ZjQ2NjFlZg=="; 
-                // --------------------------------
-                
                 try {
-                    const apiKey = atob(scrambledKey); // This unscrambles it
-
+                    const apiKey = atob(scrambledKey);
                     const response = await fetch(API_URL, {
                         method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                            "Authorization": `Bearer ${apiKey}`,
-                            "HTTP-Referer": window.location.href, 
-                            "X-Title": "Bhopa Chat"
-                        },
+                        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${apiKey}`, "HTTP-Referer": window.location.href, "X-Title": "Bhopa Chat" },
                         body: JSON.stringify({
                             model: AI_MODEL,
                             messages: [
                                 { role: "system", content: SYSTEM_PROMPT },
-                                ...messages.map(m => ({
-                                    role: m.sender === 'user' ? 'user' : 'assistant',
-                                    content: m.text
-                                })),
+                                ...messages.map(m => ({ role: m.sender === 'user' ? 'user' : 'assistant', content: m.text })),
                                 { role: "user", content: userText }
                             ]
                         })
                     });
-
-                    if (!response.ok) {
-                        if (response.status === 401) return "Key Error: The scrambled key is incorrect.";
-                        if (response.status === 429) return "The spirits are busy (Rate Limit). Please wait 10 seconds.";
-                        throw new Error(`Error: ${response.status}`);
-                    }
-
+                    if (!response.ok) throw new Error("Connection Error");
                     const data = await response.json();
-                    if (!data.choices || !data.choices[0] || !data.choices[0].message) return "The scroll is blank.";
-                    
-                    let cleanText = data.choices[0].message.content;
-                    cleanText = cleanText.replace(/<s>/g, "").replace(/<\/s>/g, "").trim();
-                    
+                    let cleanText = data.choices[0].message.content.replace(/<s>/g, "").replace(/<\/s>/g, "").trim();
                     return cleanText;
-
-                } catch (error) {
-                    return `⚠️ ${error.message}`;
-                }
+                } catch (error) { return "The spirits are silent right now."; }
             };
 
             const handleSend = async () => {
                 if (!input.trim()) return;
                 const userText = input;
                 setInput(""); 
-                
                 setMessages(prev => [...prev, { sender: 'user', text: userText }]);
                 setIsTyping(true);
-
                 const aiResponse = await callAI(userText);
                 setMessages(prev => [...prev, { sender: 'bhopa', text: aiResponse }]);
                 setIsTyping(false);
             };
 
             return (
-                <div className="relative h-screen flex items-center justify-center p-4">
-                    {/* Backgrounds */}
+                <div className="relative h-[100dvh] w-full flex flex-col md:items-center md:justify-center overflow-hidden">
+                    <div className="bg-animated"></div>
                     <div className="texture"></div>
                     <BackgroundParticles />
                     
-                    {/* Main Card */}
-                    <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="relative z-10 w-full max-w-4xl h-[90vh] flex flex-col bg-[#fdf6e3] rounded-xl shadow-[0_30px_60px_rgba(44,11,14,0.3)] border-[3px] border-[#8B0000] overflow-hidden">
+                    {/* Main Container - Full Screen on Mobile, Card on Desktop */}
+                    <motion.div 
+                        initial={{ opacity: 0 }} animate={{ opacity: 1 }} 
+                        className="relative z-10 w-full md:max-w-4xl h-full md:h-[90vh] flex flex-col bg-[#fdf6e3] md:rounded-xl shadow-none md:shadow-[0_30px_60px_rgba(44,11,14,0.3)] border-0 md:border-[3px] border-[#8B0000] overflow-hidden"
+                    >
                         
                         {/* HEADER */}
-                        <div className="bg-[#8B0000] text-[#fdf6e3] p-4 flex justify-between items-center shadow-lg relative z-20">
-                            
-                            <div className="flex items-center gap-4 relative z-10">
+                        <div className="bg-[#8B0000] text-[#fdf6e3] p-3 md:p-4 flex justify-between items-center shadow-lg relative z-20 shrink-0">
+                            <div className="flex items-center gap-3 relative z-10">
                                 <BhopaAvatar isTyping={isTyping} />
                                 <div>
-                                    <h1 className="font-display text-2xl tracking-wide">The Digital Bhopa</h1>
-                                    <p className="font-serif text-sm opacity-80 uppercase tracking-widest">{isTyping ? "Consulting the Spirits..." : "AI Powered Storyteller"}</p>
+                                    <h1 className="font-display text-xl md:text-2xl tracking-wide">The Digital Bhopa</h1>
+                                    <p className="font-serif text-xs md:text-sm opacity-80 uppercase tracking-widest">{isTyping ? "Consulting..." : "Storyteller"}</p>
                                 </div>
                             </div>
-
-                            {/* HOME BUTTON */}
-                            <a href="index.html" className="text-sm text-[#fdf6e3]/90 hover:text-white border border-[#fdf6e3]/30 px-4 py-2 rounded-full transition-all hover:bg-[#fdf6e3]/10 z-50 no-underline font-serif">
+                            <a href="index.html" className="text-xs md:text-sm text-[#fdf6e3]/90 border border-[#fdf6e3]/30 px-3 py-1.5 md:px-4 md:py-2 rounded-full z-50 no-underline font-serif">
                                 ← Home
                             </a>
-                            
-                            {/* Texture Overlay for Header */}
-                            <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/axiom-pattern.png')] mix-blend-overlay pointer-events-none"></div>
                         </div>
 
                         {/* Messages */}
-                        <div className="flex-1 overflow-y-auto p-4 space-y-6 bg-orange-50/60 chat-container scroll-smooth relative">
+                        <div className="flex-1 overflow-y-auto p-3 md:p-4 space-y-4 bg-orange-50/60 chat-container scroll-smooth">
                             {messages.map((msg, idx) => (
-                                <motion.div 
-                                    key={idx} 
-                                    initial={{ opacity: 0, y: 10 }} 
-                                    animate={{ opacity: 1, y: 0 }}
-                                    className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
-                                >
-                                    <div className={`relative max-w-[85%] p-5 rounded-2xl text-lg leading-relaxed shadow-sm ${msg.sender === 'user' ? 'bg-[#8B0000] text-white bubble-user' : 'bg-white text-[#2c0b0e] bubble-bhopa'}`}>
+                                <motion.div key={idx} initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
+                                    <div className={`relative max-w-[85%] px-4 py-3 rounded-2xl text-base md:text-lg leading-relaxed shadow-sm ${msg.sender === 'user' ? 'bg-[#8B0000] text-white bubble-user' : 'bg-white text-[#2c0b0e] bubble-bhopa'}`}>
                                         {msg.text}
                                     </div>
                                 </motion.div>
                             ))}
                             {isTyping && (
-                                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex justify-start w-full">
-                                    <div className="bg-white px-5 py-3 rounded-2xl bubble-bhopa"><ThinkingIndicator /></div>
-                                </motion.div>
+                                <div className="flex justify-start w-full">
+                                    <div className="bg-white px-4 py-2 rounded-2xl bubble-bhopa"><ThinkingIndicator /></div>
+                                </div>
                             )}
                             <div ref={bottomRef}></div>
                         </div>
 
                         {/* Input */}
-                        <div className="p-4 bg-white border-t border-[#8B0000]/10 relative z-20 flex gap-3">
+                        <div className="p-3 md:p-4 bg-white border-t border-[#8B0000]/10 relative z-20 flex gap-2 md:gap-3 shrink-0">
                             <input 
                                 type="text" 
                                 value={input}
                                 onChange={(e) => setInput(e.target.value)}
                                 onKeyDown={(e) => e.key === 'Enter' && handleSend()}
                                 placeholder="Ask about Phad..."
-                                className="flex-1 bg-gray-100 text-[#2c0b0e] px-6 py-4 rounded-full outline-none focus:ring-2 focus:ring-[#8B0000]/50 font-serif"
+                                className="flex-1 bg-gray-100 text-[#2c0b0e] px-4 py-3 md:px-6 md:py-4 rounded-full outline-none focus:ring-2 focus:ring-[#8B0000]/50 font-serif text-sm md:text-base"
                                 disabled={isTyping}
                             />
                             <button 
                                 onClick={handleSend} 
                                 disabled={isTyping}
-                                className="bg-[#8B0000] hover:bg-[#a50000] text-white w-14 h-14 rounded-full shadow-lg flex items-center justify-center disabled:opacity-50 transition-all"
+                                className="bg-[#8B0000] active:bg-[#600000] text-white w-12 h-12 md:w-14 md:h-14 rounded-full shadow-lg flex items-center justify-center disabled:opacity-50 transition-all"
                             >
                                 ➤
                             </button>
