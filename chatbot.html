@@ -170,7 +170,6 @@
             const bottomRef = useRef(null);
 
             // --- SECURE KEY CHECK ---
-            // This is the new part that asks for the key safely
             useEffect(() => {
                 const storedKey = localStorage.getItem("openrouter_key");
                 if (!storedKey) {
@@ -217,7 +216,6 @@
 
                     if (!response.ok) {
                         if (response.status === 401) {
-                            // Key invalid? Delete it and tell user to refresh
                             localStorage.removeItem("openrouter_key");
                             return "The key was incorrect. Please refresh the page to enter a new one.";
                         }
@@ -227,7 +225,12 @@
 
                     const data = await response.json();
                     if (!data.choices || !data.choices[0] || !data.choices[0].message) return "The scroll is blank.";
-                    return data.choices[0].message.content;
+                    
+                    // FIX: This cleans up the <s> tags
+                    let cleanText = data.choices[0].message.content;
+                    cleanText = cleanText.replace(/<s>/g, "").replace(/<\/s>/g, "").trim();
+                    
+                    return cleanText;
 
                 } catch (error) {
                     return `⚠️ ${error.message}`;
