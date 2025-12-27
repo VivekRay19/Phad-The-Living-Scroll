@@ -226,7 +226,7 @@
                     const data = await response.json();
                     if (!data.choices || !data.choices[0] || !data.choices[0].message) return "The scroll is blank.";
                     
-                    // FIX: This cleans up the <s> tags
+                    // CLEAN S TAGS
                     let cleanText = data.choices[0].message.content;
                     cleanText = cleanText.replace(/<s>/g, "").replace(/<\/s>/g, "").trim();
                     
@@ -270,7 +270,7 @@
                                 </div>
                             </div>
 
-                            {/* HOME BUTTON */}
+                            {/* HOME BUTTON (Replaced Reset Button) */}
                             <a href="index.html" className="text-sm text-[#fdf6e3]/90 hover:text-white border border-[#fdf6e3]/30 px-4 py-2 rounded-full transition-all hover:bg-[#fdf6e3]/10 z-50 no-underline font-serif">
                                 ← Home
                             </a>
