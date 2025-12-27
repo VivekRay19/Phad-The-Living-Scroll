@@ -12,7 +12,6 @@
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://unpkg.com/framer-motion@10.16.4/dist/framer-motion.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0"></script>
 
     <link href="https://fonts.googleapis.com/css2?family=Rozha+One&family=Sahitya:wght@400;700&display=swap" rel="stylesheet">
 
@@ -61,8 +60,6 @@
             }
         }
 
-        .chat-scroll::-webkit-scrollbar { width: 4px; }
-        .chat-scroll::-webkit-scrollbar-thumb { background: #8B0000; border-radius: 4px; }
         ::-webkit-scrollbar { width: 0px; background: transparent; }
     </style>
 </head>
@@ -73,220 +70,9 @@
         const { useRef, useState, useEffect } = React;
         const { motion, useScroll, useTransform, AnimatePresence } = window.Motion;
 
-// --- 1. INTEGRATED RESEARCH DATA (Brain of the Chatbot) ---
-        const RESEARCH_DATA = [
-            {
-                topic: "What is Phad Painting?",
-                content: "Phad painting is a traditional folk art form from Rajasthan that combines visual art, oral storytelling, and ritual performance. It is painted on long cloth scrolls and used during night-long performances to narrate heroic tales of local deities. Rather than being decorative objects, Phads historically functioned as sacred storytelling tools.",
-                keywords: "rajasthani folk art ritual painting storytelling scroll traditional indian art"
-            },
-            {
-                topic: "Origins of Phad Tradition",
-                content: "Phad painting originated within specific communities in Rajasthan, especially among the Joshi painter families. These artists created scrolls that were used by Bhopa–Bhopi priest-singer couples during ritual performances. The tradition was deeply rooted in village life and religious devotion.",
-                keywords: "joshi community hereditary artists folk traditions caste-based art history"
-            },
-            {
-                topic: "The Team",
-                content: "This Discover India Program (DIP) project is Group 10 from Flame University. Led by Vivek Ray (GR) and Palak Rajput (Co-GR), the team includes Yuvika Gupta, Karan Divekar, Harshit Singh, Koustav Saha, Divyanshi Jain, Vedant Murmatti, Arushi Rastogi, Sahil Kokare, Soham Mandal, Aayush Oswal, and Aadi Bokriya.",
-                keywords: "team group 10 members creators about made who students flame vivek palak"
-            },
-            {
-                topic: "Role of Bhopa–Bhopi Performers",
-                content: "Bhopa–Bhopi couples were central to the Phad tradition, performing epic narratives through song and storytelling. The Phad scroll acted as a mobile temple, unfolding scene by scene during performances. These performances were communal events that reinforced faith, history, and moral values.",
-                keywords: "oral performance priest singers folk storytelling mobile temple bhopa bhopi"
-            },
-            {
-                topic: "Sacred and Ritual Significance",
-                content: "Traditionally, Phad paintings were treated as sacred objects rather than artworks. They were consecrated before use and only displayed during performances. The paintings were believed to possess spiritual power and were used in healing rituals and community gatherings.",
-                keywords: "sacred art ritual object spiritual practice healing traditions"
-            },
-            {
-                topic: "Cultural Geography of Phad",
-                content: "Phad painting is geographically rooted in central Rajasthan, especially in Bhilwara and Shahpura. These regions have historically supported painter families, performers, and ritual patrons. The art form developed in close relationship with local temples, villages, and festivals.",
-                keywords: "bhilwara shahpura rajasthan folk culture regional art geography location"
-            },
-            {
-                topic: "Cultural Geography of Phad",
-                content: "Phad painting is geographically rooted in central Rajasthan, especially in Bhilwara and Shahpura. These regions have historically supported painter families, performers, and ritual patrons. The art form developed in close relationship with local temples, villages, and festivals.",
-                keywords: "location where is it from bhilwara shahpura rajasthan folk culture regional art geography place origin"
-            },
-            {
-                topic: "Shift from Performance to Product",
-                content: "Over time, Phad painting has shifted from a performative tradition to a standalone art product. Large scrolls have been replaced by smaller framed paintings suitable for sale. This change has reduced the role of storytelling and ritual performance.",
-                keywords: "commodification art market framed paintings tourism art shift"
-            },
-            {
-                topic: "Impact of Commercialization",
-                content: "Commercialization has provided new income opportunities for Phad artists. However, it has also altered themes, sizes, and materials used in the paintings. Market demand often prioritizes visual appeal over narrative depth, creating tension between economic survival and cultural authenticity.",
-                keywords: "market pressure heritage economy cultural loss livelihood commercial"
-            },
-            {
-                topic: "Changing Themes and Styles",
-                content: "Modern Phad paintings often depict non-traditional subjects such as decorative figures, hunting scenes, and contemporary icons. Artists experiment with new colors and formats to attract urban buyers. While this innovation helps sustain the craft, it distances the art from its ritual origins.",
-                keywords: "modernization innovation contemporary themes artistic change"
-            },
-            {
-                topic: "Role of Institutions and NGOs",
-                content: "Institutions such as art schools and NGOs play a major role in shaping Phad today. They provide training and platforms to artists beyond hereditary families. However, they define standards of 'authenticity' that may differ from original community practices.",
-                keywords: "cultural institutions ngos heritage organizations authenticity standards"
-            },
-            {
-                topic: "Heritage Recognition and Policy",
-                content: "Phad painting’s inclusion in heritage lists has increased its visibility. Government and cultural policies aim to protect and promote the art form. However, official recognition often freezes traditions into fixed categories, which can limit organic change.",
-                keywords: "intangible cultural heritage cultural policy gi tag preservation"
-            },
-            {
-                topic: "Youth and the New Generation",
-                content: "Younger Phad artists are exploring digital platforms, social media, and online markets. They balance respect for tradition with the need to remain relevant. Many see innovation as a survival strategy rather than a rejection of heritage.",
-                keywords: "young artists digital promotion social media generational change"
-            },
-            {
-                topic: "Gender and Participation",
-                content: "Traditionally, women participated mainly as Bhopis in performances. Commercialization has opened new spaces for women as painters and independent artists. This shift has changed gender roles within the Phad ecosystem, though recognition gaps remain.",
-                keywords: "women artists gender roles folk performance inclusion"
-            },
-            {
-                topic: "Research Methodology",
-                content: "The study uses qualitative ethnographic methods grounded in fieldwork. Interviews, participant observation, and archival research are key tools. Grounded Theory is used to allow insights to emerge from lived experiences, prioritizing community voices.",
-                keywords: "ethnography qualitative research fieldwork grounded theory methodology research focus"
-            },
-            {
-                topic: "Central Argument",
-                content: "Phad painting stands at a crossroads between survival and loss. Commercial success ensures continuity but risks weakening ritual meaning. The future of Phad depends on how communities negotiate these tensions between tradition and modernity.",
-                keywords: "cultural crossroads preservation vs change identity future of folk art"
-            }
-        ];
-
+        // --- ASSETS ---
         const ASSETS = {
             logo: "https://www.flame.edu.in/images/logo.png",
-        };
-
-        // --- UPDATED CHATBOT COMPONENT ---
-        const ChatBhopa = ({ yOffset }) => {
-            const [isOpen, setIsOpen] = useState(false);
-            const [input, setInput] = useState("");
-            const [messages, setMessages] = useState([
-                { sender: 'bhopa', text: 'Khamma Ghani! I am the digital Bhopa. Ask me about the Phad, the colors, or our team.' }
-            ]);
-
-            const suggestions = ["What is Phad?", "The Colors", "The Team", "Bhopa & Bhopi"];
-
-            const handleSend = (forcedQuery) => {
-                const rawQuery = forcedQuery || input;
-                if (!rawQuery.trim()) return;
-                
-                setMessages(prev => [...prev, { sender: 'user', text: rawQuery }]);
-                if (!forcedQuery) setInput("");
-
-                // 1. NATURAL LANGUAGE PRE-PROCESSOR
-                // Strips filler words so the bot identifies the keyword "team" or "colors"
-                const cleanQuery = (text) => {
-                    const noise = ["tell", "me", "about", "what", "is", "who", "are", "the", "show", "can", "you", "please", "something", "give"];
-                    return text.toLowerCase()
-                        .split(/\s+/)
-                        .filter(word => !noise.includes(word))
-                        .join(" ");
-                };
-
-                const processedQuery = cleanQuery(rawQuery);
-
-                // 2. SEARCH ENGINE CONFIG
-                const fuse = new Fuse(RESEARCH_DATA, {
-                    keys: [
-                        { name: 'keywords', weight: 0.8 },
-                        { name: 'topic', weight: 0.5 },
-                        { name: 'content', weight: 0.2 }
-                    ],
-                    threshold: 0.4,
-                    distance: 100
-                });
-
-                // 3. EXECUTE SEARCH
-                let result = fuse.search(processedQuery);
-
-                // Fallback to raw query if cleaned search found nothing
-                if (result.length === 0) {
-                    result = fuse.search(rawQuery);
-                }
-
-                setTimeout(() => {
-                    let response = result.length > 0 
-                        ? result[0].item.content 
-                        : "That story is not yet written on my scroll. Try asking about 'the team' or 'the colors'.";
-                    
-                    setMessages(prev => [...prev, { sender: 'bhopa', text: response }]);
-                }, 600);
-            };
-
-            return (
-                <motion.div className="fixed bottom-8 right-16 z-[9999] font-serif" style={{ y: yOffset }}>
-                    <AnimatePresence>
-                        {isOpen && (
-                            <motion.div 
-                                initial={{ opacity: 0, scale: 0.8, y: 20 }}
-                                animate={{ opacity: 1, scale: 1, y: 0 }}
-                                exit={{ opacity: 0, scale: 0.8, y: 20 }}
-                                className="mb-4 w-80 bg-[#fdf6e3] rounded-lg shadow-2xl overflow-hidden border-4 border-double border-[#8B0000]"
-                            >
-                                <div className="bg-[#8B0000] text-[#fdf6e3] p-4 flex justify-between items-center">
-                                    <h3 className="font-display text-lg">The Digital Bhopa</h3>
-                                    <button onClick={() => setIsOpen(false)} className="text-xl">&times;</button>
-                                </div>
-                                
-                                <div className="h-64 overflow-y-auto p-4 chat-scroll bg-orange-50 space-y-3">
-                                    {messages.map((msg, idx) => (
-                                        <div key={idx} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
-                                            <div className={`max-w-[80%] p-3 rounded-lg text-sm ${msg.sender === 'user' ? 'bg-[#8B0000] text-white rounded-br-none' : 'bg-[#e5e7eb] text-[#2c0b0e] border border-[#8B0000]/20 rounded-bl-none'}`}>
-                                                {msg.text}
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-
-                                <div className="p-3 bg-white border-t border-[#8B0000]/10 flex flex-wrap gap-2 justify-center">
-                                    {suggestions.map((q, i) => (
-                                        <button 
-                                            key={i}
-                                            onClick={() => handleSend(q)}
-                                            className="text-[11px] px-3 py-1.5 rounded-full border border-[#8B0000]/40 text-[#8B0000] hover:bg-[#8B0000] hover:text-white transition-all font-bold"
-                                        >
-                                            {q}
-                                        </button>
-                                    ))}
-                                </div>
-
-                                <div className="p-3 border-t border-[#8B0000]/20 bg-white flex items-center gap-2">
-                                    <input 
-                                        type="text" 
-                                        value={input}
-                                        onChange={(e) => setInput(e.target.value)}
-                                        onKeyPress={(e) => e.key === 'Enter' && handleSend()}
-                                        placeholder="Ask a question..."
-                                        className="flex-1 px-2 py-1 outline-none text-[#8B0000] bg-transparent text-sm border-b border-transparent focus:border-[#8B0000]/30 transition-colors"
-                                    />
-                                    <button 
-                                        onClick={() => handleSend()} 
-                                        className="bg-[#8B0000] text-white rounded-full w-8 h-8 flex items-center justify-center hover:bg-[#c2410c] transition-colors shadow-sm"
-                                    >
-                                        →
-                                    </button>
-                                </div>
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
-
-                    <motion.button 
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
-                        onClick={() => setIsOpen(!isOpen)}
-                        className="w-16 h-16 bg-[#8B0000] rounded-full flex items-center justify-center shadow-lg border-2 border-[#f59e0b] text-[#fdf6e3]"
-                    >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-                        </svg>
-                    </motion.button>
-                </motion.div>
-            );
         };
 
         // --- HERO COMPONENT ---
@@ -366,7 +152,7 @@
             );
         };
 
-// --- TEAM SECTION (13 MEMBERS) ---
+        // --- TEAM SECTION (13 MEMBERS) ---
         const Team = () => {
             const teamMembers = [
                 { name: "Vivek Ray", role: "Group Representative (GR)", img: "https://via.placeholder.com/400x500" },
@@ -392,7 +178,6 @@
                             <p className="text-xl opacity-60 mb-2 font-serif tracking-widest uppercase">All Members Of Group 10</p>
                         </div>
                         
-                        {/* Grid layout changed to 4 columns for better fit of 13 people */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-16">
                             {teamMembers.map((member, i) => (
                                 <motion.div 
@@ -404,23 +189,16 @@
                                     className="group relative"
                                 >
                                     <div className="aspect-[4/5] bg-[#3d1216] border border-[#fdf6e3]/10 relative overflow-hidden transition-all duration-500 group-hover:border-[#c2410c] shadow-2xl">
-                                        
-                                        {/* IMAGE PLACEHOLDER: Replace src with member.img when you have photos */}
                                         <img 
                                             src={member.img} 
                                             alt={member.name}
                                             className="w-full h-full object-cover opacity-40 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700 grayscale hover:grayscale-0"
                                         />
-
-                                        {/* Overlay number (stylized) */}
                                         <div className="absolute top-4 right-4 text-4xl font-display opacity-10 group-hover:opacity-40 transition-opacity">
                                             {i + 1}
                                         </div>
-
-                                        {/* Red gradient hover effect */}
                                         <div className="absolute inset-0 bg-gradient-to-t from-[#8B0000]/90 via-transparent to-transparent opacity-60 group-hover:opacity-30 transition-opacity duration-500"></div>
                                     </div>
-
                                     <div className="mt-6 relative">
                                         <h3 className="text-2xl font-display mb-1 group-hover:text-[#f59e0b] transition-colors">
                                             {member.name}
@@ -436,6 +214,7 @@
                 </section>
             );
         };
+
         // --- MAIN APP ---
         const App = () => {
             const { scrollYProgress } = useScroll();
@@ -449,11 +228,27 @@
                     <motion.div className="phad-frame" style={{ opacity: frameOpacity }} />
                     <motion.div className="fixed top-0 left-0 right-0 h-1.5 bg-[#8B0000] z-[9999] origin-left" style={{ scaleX: scrollYProgress }} />
                     <motion.nav className="fixed top-8 left-10 z-[9997] mix-blend-multiply" style={{ y: navY }}>
+                        {/* Nav content can go here */}
                     </motion.nav>
+                    
                     <Hero />
                     <HorizontalScroll />
                     <Team />
-                    <ChatBhopa yOffset={chatY} />
+                    
+                    {/* --- THE REDIRECT BUTTON --- */}
+                    <motion.a 
+                        href="chatbot.html"
+                        style={{ y: chatY }}
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        // Changed to bottom-4 here
+                        className="fixed bottom-2 right-12 z-[9999] w-16 h-16 bg-[#8B0000] rounded-full flex items-center justify-center shadow-lg border-2 border-[#f59e0b] text-[#fdf6e3] cursor-pointer"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                        </svg>
+                    </motion.a>
+
                     <footer className="bg-black text-[#fdf6e3] py-12 text-center opacity-90">
                         <p className="font-serif text-sm tracking-widest opacity-60">INSPIRED BY THE ART OF PHAD PAINTING</p>
                     </footer>
