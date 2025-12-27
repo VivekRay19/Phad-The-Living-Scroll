@@ -99,7 +99,7 @@
         4. BREVITY: Keep answers short (max 3 sentences).
         `;
 
-        // --- BACKGROUND PARTICLES ---
+        // --- PARTICLES & AVATAR COMPONENTS ---
         const BackgroundParticles = () => {
             const particles = [
                 { s: "❁", l: 10, d: 15, y: 0, z: 24, c: "#8B0000" },
@@ -122,7 +122,6 @@
             );
         };
 
-        // --- ANIMATED AVATAR ---
         const BhopaAvatar = ({ isTyping }) => (
             <div className="relative w-16 h-16 flex items-center justify-center flex-shrink-0">
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden">
@@ -169,30 +168,18 @@
             const [input, setInput] = useState("");
             const bottomRef = useRef(null);
 
-            // --- SECURE KEY CHECK ---
-            useEffect(() => {
-                const storedKey = localStorage.getItem("openrouter_key");
-                if (!storedKey) {
-                    const userKey = prompt("Please enter your OpenRouter API Key:\n(It will be saved on your device only)");
-                    if (userKey) {
-                        localStorage.setItem("openrouter_key", userKey.trim());
-                        window.location.reload(); 
-                    }
-                }
-            }, []);
-
             useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
 
             // --- API CALL ---
             const callAI = async (userText) => {
-                const apiKey = localStorage.getItem("openrouter_key");
                 
-                if (!apiKey) {
-                    alert("Key missing. Refresh to enter key.");
-                    return "Connection interrupted.";
-                }
-
+                // --- SCRAMBLED KEY (I FIXED THIS FOR YOU) ---
+                const scrambledKey = "c2stb3ItdjEtZWI2Zjg2NmNhZjVmYjRlZDFhMzliMjNkNjQwZDU0YjUwYzljYTExOTgwYzUwNWM4OWY1ZTRmZGI0ZjQ2NjFlZg=="; 
+                // --------------------------------
+                
                 try {
+                    const apiKey = atob(scrambledKey); // This unscrambles it
+
                     const response = await fetch(API_URL, {
                         method: "POST",
                         headers: {
@@ -215,10 +202,7 @@
                     });
 
                     if (!response.ok) {
-                        if (response.status === 401) {
-                            localStorage.removeItem("openrouter_key");
-                            return "The key was incorrect. Please refresh the page to enter a new one.";
-                        }
+                        if (response.status === 401) return "Key Error: The scrambled key is incorrect.";
                         if (response.status === 429) return "The spirits are busy (Rate Limit). Please wait 10 seconds.";
                         throw new Error(`Error: ${response.status}`);
                     }
@@ -226,7 +210,6 @@
                     const data = await response.json();
                     if (!data.choices || !data.choices[0] || !data.choices[0].message) return "The scroll is blank.";
                     
-                    // CLEAN S TAGS
                     let cleanText = data.choices[0].message.content;
                     cleanText = cleanText.replace(/<s>/g, "").replace(/<\/s>/g, "").trim();
                     
@@ -270,7 +253,7 @@
                                 </div>
                             </div>
 
-                            {/* HOME BUTTON (Replaced Reset Button) */}
+                            {/* HOME BUTTON */}
                             <a href="index.html" className="text-sm text-[#fdf6e3]/90 hover:text-white border border-[#fdf6e3]/30 px-4 py-2 rounded-full transition-all hover:bg-[#fdf6e3]/10 z-50 no-underline font-serif">
                                 ← Home
                             </a>
