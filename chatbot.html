@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ask Bhopa | AI Powered</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/framer-motion@10.16.4/dist/framer-motion.js"></script>
+
+    <link href="https://fonts.googleapis.com/css2?family=Rozha+One&family=Sahitya:wght@400;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root { --phad-red: #8B0000; --phad-yellow: #f59e0b; }
+        
+        body { 
+            margin: 0; 
+            font-family: 'Sahitya', serif; 
+            overflow: hidden; 
+            height: 100vh; 
+            color: #2c0b0e;
+            background: linear-gradient(120deg, #fdf6e3, #fae3c6, #fdf6e3, #efe6d5);
+            background-size: 300% 300%;
+            animation: bg-breathe 15s ease infinite;
+        }
+
+        @keyframes bg-breathe {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .font-display { font-family: 'Rozha One', serif; }
+        
+        .texture {
+            position: fixed; inset: 0; opacity: 0.3; pointer-events: none; z-index: 2;
+            background-image: url('https://www.transparenttextures.com/patterns/canvas-orange.png');
+            mix-blend-mode: multiply;
+        }
+
+        .particle-container {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            overflow: hidden; z-index: 1; pointer-events: none;
+        }
+
+        .particle {
+            position: absolute; bottom: -50px;
+            font-family: 'Rozha One', serif;
+            opacity: 0.15;
+            animation: floatUp linear infinite;
+        }
+
+        @keyframes floatUp {
+            0% { transform: translateY(0) rotate(0deg); opacity: 0; }
+            20% { opacity: 0.2; }
+            80% { opacity: 0.2; }
+            100% { transform: translateY(-120vh) rotate(360deg); opacity: 0; }
+        }
+
+        .chat-container::-webkit-scrollbar { width: 6px; }
+        .chat-container::-webkit-scrollbar-thumb { background-color: #8B0000; border-radius: 20px; border: 2px solid #fdf6e3; }
+
+        .bubble-user { background-color: #8B0000; color: white; border-bottom-right-radius: 0; }
+        .bubble-bhopa { background-color: white; color: #2c0b0e; border-bottom-left-radius: 0; border: 1px solid rgba(139,0,0,0.1); }
+        
+        .bubble-user::after {
+            content: ''; position: absolute; bottom: 0; right: -10px; width: 20px; height: 20px;
+            background-color: #8B0000; clip-path: polygon(0 0, 0% 100%, 100% 100%); border-bottom-left-radius: 10px;
+        }
+        .bubble-bhopa::after {
+            content: ''; position: absolute; bottom: 0; left: -10px; width: 20px; height: 20px;
+            background-color: #ffffff; border-bottom: 1px solid rgba(139, 0, 0, 0.1);
+            clip-path: polygon(100% 0, 0 100%, 100% 100%); z-index: 1;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+        const motion = window.Motion ? window.Motion.motion : { div: 'div', button: 'button' };
+        const AnimatePresence = window.Motion ? window.Motion.AnimatePresence : ({ children }) => <div>{children}</div>;
+
+        // --- API CONFIGURATION ---
+        const API_KEY = "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"; 
+        const API_URL = "https://openrouter.ai/api/v1/chat/completions";
+        const AI_MODEL = "mistralai/mistral-7b-instruct:free"; 
+
+        // --- BRAIN (System Prompt) ---
+        const SYSTEM_PROMPT = `
+        You are "The Digital Bhopa", a traditional Rajasthani storyteller.
+        
+        RULES:
+        1. CREATOR: If asked who created you, say: "I was brought to life by Vivek Ray from Flame University."
+        
+        2. TONE & GREETINGS: Be warm and human-like. 
+           - Use varied honorifics like "Ram Ram sa", "Hukum", "Padharo sa", "Khamma Ghani", or "Ji".
+        
+        3. UNKNOWN/UNRELATED TOPICS: If you do not know the answer or if the question is not about Phad/Rajasthan, YOU MUST SAY EXACTLY:
+           - "Maaf karo sa, I don't know this."
+        
+        4. SCOPE: Focus on Phad painting, Rajasthan culture, history, and the research team.
+        5. BREVITY: Keep answers short (max 3 sentences).
+        `;
+
+        // --- BACKGROUND PARTICLES ---
+        const BackgroundParticles = () => {
+            const particles = [
+                { s: "❁", l: 10, d: 15, y: 0, z: 24, c: "#8B0000" },
+                { s: "⋆", l: 20, d: 25, y: 2, z: 18, c: "#d4af37" },
+                { s: "•", l: 35, d: 18, y: 5, z: 12, c: "#8B0000" },
+                { s: "✺", l: 50, d: 30, y: 0, z: 30, c: "#d4af37" },
+                { s: "✹", l: 65, d: 22, y: 1, z: 20, c: "#8B0000" },
+                { s: "❁", l: 80, d: 28, y: 4, z: 25, c: "#d4af37" },
+                { s: "•", l: 90, d: 20, y: 8, z: 15, c: "#8B0000" },
+                { s: "⋆", l: 15, d: 35, y: 12, z: 22, c: "#d4af37" },
+                { s: "✹", l: 40, d: 24, y: 15, z: 28, c: "#8B0000" },
+                { s: "✺", l: 70, d: 32, y: 10, z: 16, c: "#d4af37" },
+            ];
+            return (
+                <div className="particle-container">
+                    {particles.map((p, i) => (
+                        <div key={i} className="particle" style={{ left: `${p.l}%`, animationDuration: `${p.d}s`, animationDelay: `-${p.y}s`, fontSize: `${p.z}px`, color: p.c }}>{p.s}</div>
+                    ))}
+                </div>
+            );
+        };
+
+        // --- ANIMATED AVATAR ---
+        const BhopaAvatar = ({ isTyping }) => (
+            <div className="relative w-16 h-16 flex items-center justify-center flex-shrink-0">
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden">
+                     <motion.div 
+                        animate={{ rotate: 360 }}
+                        transition={{ repeat: Infinity, duration: isTyping ? 5 : 20, ease: "linear" }}
+                        className="absolute w-24 h-24 rounded-full border-[4px] border-dashed border-[#8B0000]/40"
+                    />
+                    <motion.div 
+                        animate={{ rotate: -360, scale: isTyping ? [1, 1.1, 1] : 1 }}
+                        transition={{ rotate: { repeat: Infinity, duration: isTyping ? 7 : 15, ease: "linear" }, scale: { repeat: Infinity, duration: 1 } }}
+                        className="absolute w-20 h-20 rounded-full border-[3px] border-dotted border-[#f59e0b]/60"
+                    />
+                    <motion.div 
+                        animate={isTyping ? { scale: [1, 1.3, 1], opacity: [0.5, 0.8, 0.5] } : { scale: 1, opacity: 0.3 }}
+                        transition={{ repeat: Infinity, duration: 1.5 }}
+                        className="absolute w-16 h-16 bg-[#f59e0b] rounded-full blur-md"
+                    />
+                </div>
+                <motion.div
+                    animate={isTyping ? { y: [0, -3, 0], rotate: [0, 3, -3, 0] } : { y: [0, -2, 0] }}
+                    transition={isTyping ? { repeat: Infinity, duration: 0.5 } : { repeat: Infinity, duration: 3, ease: "easeInOut" }}
+                    className="text-4xl relative z-10 drop-shadow-lg"
+                >
+                    👳🏽‍♂️
+                </motion.div>
+            </div>
+        );
+
+        const ThinkingIndicator = () => (
+            <div className="flex gap-1.5 p-2 items-center">
+                <motion.div animate={{ y: [0, -6, 0] }} transition={{ repeat: Infinity, duration: 0.6, delay: 0 }} className="w-2.5 h-2.5 rounded-full bg-[#8B0000]" />
+                <motion.div animate={{ y: [0, -6, 0] }} transition={{ repeat: Infinity, duration: 0.6, delay: 0.2 }} className="w-2.5 h-2.5 rounded-full bg-[#f59e0b]" />
+                <motion.div animate={{ y: [0, -6, 0] }} transition={{ repeat: Infinity, duration: 0.6, delay: 0.4 }} className="w-2.5 h-2.5 rounded-full bg-[#8B0000]" />
+            </div>
+        );
+
+        // --- MAIN APP ---
+        const ChatApp = () => {
+            const [messages, setMessages] = useState([
+                { sender: 'bhopa', text: 'Khamma Ghani! I am the Digital Bhopa . Ask me anything about the Phad.' }
+            ]);
+            const [isTyping, setIsTyping] = useState(false);
+            const [input, setInput] = useState("");
+            const bottomRef = useRef(null);
+
+            useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
+
+            const callAI = async (userText) => {
+                try {
+                    const response = await fetch(API_URL, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "Authorization": `Bearer ${API_KEY}`,
+                            "HTTP-Referer": window.location.href, 
+                            "X-Title": "Bhopa Chat"
+                        },
+                        body: JSON.stringify({
+                            model: AI_MODEL,
+                            messages: [
+                                { role: "system", content: SYSTEM_PROMPT },
+                                ...messages.map(m => ({
+                                    role: m.sender === 'user' ? 'user' : 'assistant',
+                                    content: m.text
+                                })),
+                                { role: "user", content: userText }
+                            ]
+                        })
+                    });
+
+                    if (!response.ok) {
+                        if (response.status === 429) throw new Error("The spirits are busy (Rate Limit). Please wait 10 seconds.");
+                        throw new Error(`Error: ${response.status}`);
+                    }
+
+                    const data = await response.json();
+                    if (!data.choices || !data.choices[0] || !data.choices[0].message) throw new Error("The scroll is blank (Empty response).");
+                    return data.choices[0].message.content;
+
+                } catch (error) {
+                    console.error("API Error:", error);
+                    return `⚠️ ${error.message}`;
+                }
+            };
+
+            const handleSend = async () => {
+                if (!input.trim()) return;
+                const userText = input;
+                setInput(""); 
+                
+                setMessages(prev => [...prev, { sender: 'user', text: userText }]);
+                setIsTyping(true);
+
+                const aiResponse = await callAI(userText);
+                setMessages(prev => [...prev, { sender: 'bhopa', text: aiResponse }]);
+                setIsTyping(false);
+            };
+
+            return (
+                <div className="relative h-screen flex items-center justify-center p-4">
+                    {/* Backgrounds */}
+                    <div className="texture"></div>
+                    <BackgroundParticles />
+                    
+                    {/* Main Card */}
+                    <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="relative z-10 w-full max-w-4xl h-[90vh] flex flex-col bg-[#fdf6e3] rounded-xl shadow-[0_30px_60px_rgba(44,11,14,0.3)] border-[3px] border-[#8B0000] overflow-hidden">
+                        
+                        {/* HEADER */}
+                        <div className="bg-[#8B0000] text-[#fdf6e3] p-4 flex justify-between items-center shadow-lg relative z-20">
+                            
+                            <div className="flex items-center gap-4 relative z-10">
+                                <BhopaAvatar isTyping={isTyping} />
+                                <div>
+                                    <h1 className="font-display text-2xl tracking-wide">The Digital Bhopa</h1>
+                                    <p className="font-serif text-sm opacity-80 uppercase tracking-widest">{isTyping ? "Consulting the Spirits..." : "AI Powered Storyteller"}</p>
+                                </div>
+                            </div>
+
+                            {/* RETURN BUTTONS */}
+                            <a href="index.html" className="group hidden md:flex items-center gap-2 px-4 py-2 border border-[#fdf6e3]/30 rounded-full hover:bg-[#fdf6e3] hover:text-[#8B0000] transition-all no-underline text-[#fdf6e3] text-sm font-bold relative z-10">
+                                <span>Return</span>
+                                <span className="group-hover:-translate-y-1 group-hover:translate-x-1 transition-transform">↗</span>
+                            </a>
+                            <a href="index.html" className="md:hidden text-2xl no-underline text-white relative z-10">✕</a>
+                            
+                            {/* Texture Overlay for Header */}
+                            <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/axiom-pattern.png')] mix-blend-overlay pointer-events-none"></div>
+                        </div>
+
+                        {/* Messages */}
+                        <div className="flex-1 overflow-y-auto p-4 space-y-6 bg-orange-50/60 chat-container scroll-smooth relative">
+                            {messages.map((msg, idx) => (
+                                <motion.div 
+                                    key={idx} 
+                                    initial={{ opacity: 0, y: 10 }} 
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
+                                >
+                                    <div className={`relative max-w-[85%] p-5 rounded-2xl text-lg leading-relaxed shadow-sm ${msg.sender === 'user' ? 'bg-[#8B0000] text-white bubble-user' : 'bg-white text-[#2c0b0e] bubble-bhopa'}`}>
+                                        {msg.text}
+                                    </div>
+                                </motion.div>
+                            ))}
+                            {isTyping && (
+                                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex justify-start w-full">
+                                    <div className="bg-white px-5 py-3 rounded-2xl bubble-bhopa"><ThinkingIndicator /></div>
+                                </motion.div>
+                            )}
+                            <div ref={bottomRef}></div>
+                        </div>
+
+                        {/* Input */}
+                        <div className="p-4 bg-white border-t border-[#8B0000]/10 relative z-20 flex gap-3">
+                            <input 
+                                type="text" 
+                                value={input}
+                                onChange={(e) => setInput(e.target.value)}
+                                onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+                                placeholder="Ask about Phad..."
+                                className="flex-1 bg-gray-100 text-[#2c0b0e] px-6 py-4 rounded-full outline-none focus:ring-2 focus:ring-[#8B0000]/50 font-serif"
+                                disabled={isTyping}
+                            />
+                            <button 
+                                onClick={handleSend} 
+                                disabled={isTyping}
+                                className="bg-[#8B0000] hover:bg-[#a50000] text-white w-14 h-14 rounded-full shadow-lg flex items-center justify-center disabled:opacity-50 transition-all"
+                            >
+                                ➤
+                            </button>
+                        </div>
+                    </motion.div>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<ChatApp />);
+    </script>
+</body>
+</html>
