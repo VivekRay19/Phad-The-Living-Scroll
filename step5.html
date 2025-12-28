@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Step 05: Shringar | The Living Scroll</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=Inter:wght@300;600&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --phad-maroon: #5a0b0b;
+            --phad-cream: #f7f1e3;
+            --phad-gold: #c5a059;
+            --white: #ffffff;
+        }
+
+        body, html {
+            margin: 0; padding: 0;
+            background-color: var(--phad-cream);
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+            color: var(--phad-maroon);
+        }
+
+        /* Fixed Container for the "Zoom" Effect */
+        .viewport {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100vh;
+            display: flex; justify-content: center; align-items: center;
+            overflow: hidden;
+            perspective: 1000px;
+        }
+
+        .section-container {
+            position: absolute;
+            width: 100%; height: 100%;
+            display: flex; justify-content: center; align-items: center;
+            opacity: 0;
+            visibility: hidden;
+            transform: scale(0.8) translateZ(-200px);
+        }
+
+        /* Large Central Motif that Scales Up */
+        .zoom-motif {
+            position: absolute;
+            font-family: 'Playfair Display', serif;
+            font-size: 25vw;
+            font-weight: 900;
+            color: var(--phad-gold);
+            opacity: 0.1;
+            white-space: nowrap;
+            letter-spacing: -0.05em;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .content-box {
+            position: relative;
+            z-index: 10;
+            background: var(--white);
+            padding: 4rem;
+            max-width: 600px;
+            border: 1px solid rgba(90, 11, 11, 0.1);
+            box-shadow: 0 40px 100px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .content-box h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 3rem;
+            margin: 0 0 1.5rem 0;
+        }
+
+        .content-box h2 span {
+            display: block;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 5px;
+            margin-bottom: 0.5rem;
+            color: var(--phad-gold);
+        }
+
+        .content-box p {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: #444;
+        }
+
+        /* Visual indicator of the scroll progress */
+        .ring-container {
+            position: absolute;
+            width: 100%; height: 100%;
+            display: flex; justify-content: center; align-items: center;
+            pointer-events: none;
+        }
+
+        .ring {
+            position: absolute;
+            border: 2px solid var(--phad-gold);
+            border-radius: 50%;
+            opacity: 0.1;
+        }
+
+        /* Portal Bar at the bottom for Finish */
+        .finish-line {
+            position: fixed;
+            bottom: 0; left: 0;
+            width: 0%; height: 10px;
+            background: var(--phad-maroon);
+            z-index: 100;
+        }
+
+        .scroll-space {
+            height: 600vh; /* Control how long the user scrolls */
+        }
+
+        .instruction {
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.7rem;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            opacity: 0.4;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="finish-line"></div>
+    <div class="instruction">Scroll to Infuse Color</div>
+
+    <div class="viewport">
+        <div class="ring-container">
+            <div class="ring" style="width: 20vw; height: 20vw;"></div>
+            <div class="ring" style="width: 40vw; height: 40vw;"></div>
+            <div class="ring" style="width: 60vw; height: 60vw;"></div>
+        </div>
+
+        <div class="section-container" id="s1">
+            <div class="zoom-motif">SHRINGAR</div>
+            <div class="content-box">
+                <h2><span>05 / 01</span>The Awakening</h2>
+                <p>The black ink is dry. Now, the <i>Shringar</i> begins—the ritualistic application of color that transforms a sketch into a deity.</p>
+            </div>
+        </div>
+
+        <div class="section-container" id="s2">
+            <div class="zoom-motif">MINERALS</div>
+            <div class="content-box">
+                <h2><span>05 / 02</span>Nature's Palette</h2>
+                <p>We use only natural minerals. <i>Hartal</i> for yellow, <i>Hingul</i> for red, and Indigo for the deep blues of the Rajasthan sky.</p>
+            </div>
+        </div>
+
+        <div class="section-container" id="s3">
+            <div class="zoom-motif">SAJAWAT</div>
+            <div class="content-box">
+                <h2><span>05 / 03</span>Ornamentation</h2>
+                <p><i>Sajawat</i> is the art of the detail. Thousands of tiny white dots (pearls) and gold leaf patterns are added to the royal garments.</p>
+            </div>
+        </div>
+
+        <div class="section-container" id="s4">
+            <div class="zoom-motif">PRANA</div>
+            <div class="content-box">
+                <h2><span>05 / 04</span>The Eye Opening</h2>
+                <p>The final act is the <i>Aankh Phodna</i>. By painting the eyes, the artist invites the spirit of the hero into the cloth.</p>
+            </div>
+        </div>
+
+        <div class="section-container" id="s5">
+            <div class="zoom-motif">PORTAL</div>
+            <div class="content-box">
+                <h2><span>Complete</span>The Living Scroll</h2>
+                <p>The journey of creation is finished. Continue scrolling to return to the world of the Phad.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="scroll-space"></div>
+
+    <script>
+        gsap.registerPlugin(ScrollTrigger);
+
+        const sections = gsap.utils.toArray(".section-container");
+        
+        // Setup the timeline
+        const tl = gsap.timeline({
+            scrollTrigger: {
+                trigger: ".scroll-space",
+                start: "top top",
+                end: "bottom bottom",
+                scrub: 1.5,
+                onLeave: () => {
+                    sessionStorage.setItem('returnToStep', 'step5');
+                    window.location.href = "index.html";
+                }
+            }
+        });
+
+        // Loop through sections to create the "Zoom & Fade" sequence
+        sections.forEach((section, i) => {
+            const motif = section.querySelector(".zoom-motif");
+            const box = section.querySelector(".content-box");
+
+            tl.to(section, {
+                onStart: () => gsap.set(section, { visibility: "visible" }),
+                opacity: 1,
+                scale: 1,
+                z: 0,
+                duration: 1,
+            })
+            .from(motif, { scale: 0.5, opacity: 0, duration: 1 }, "<")
+            .to(section, {
+                opacity: 0,
+                scale: 1.5,
+                z: 100,
+                duration: 1,
+            }, "+=1") // Stay on screen for a bit
+            .set(section, { visibility: "hidden" });
+        });
+
+        // Animate the decorative rings
+        gsap.to(".ring", {
+            scale: 1.5,
+            opacity: 0,
+            stagger: 0.2,
+            repeat: -1,
+            duration: 3,
+            ease: "sine.inOut"
+        });
+
+        // Progress Bar
+        gsap.to(".finish-line", {
+            width: "100%",
+            ease: "none",
+            scrollTrigger: {
+                trigger: ".scroll-space",
+                start: "top top",
+                end: "bottom bottom",
+                scrub: true
+            }
+        });
+    </script>
+</body>
+</html>

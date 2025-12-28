@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Step 08: The Eternal Scroll | The Master Timeline</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --phad-maroon: #3d0a0a;
+            --phad-maroon-dark: #1a0303;
+            --phad-gold: #c5a059;
+            --phad-cream: #f7f1e3;
+        }
+
+        body, html {
+            margin: 0; padding: 0;
+            background-color: var(--phad-maroon-dark);
+            font-family: 'Inter', sans-serif;
+            color: var(--phad-cream);
+            height: 850vh; /* Increased height to allow for the 'background only' moment */
+        }
+
+        .viewport {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100vh;
+            perspective: 1200px;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: radial-gradient(circle at center, var(--phad-maroon) 0%, var(--phad-maroon-dark) 100%);
+        }
+
+        .texture-overlay {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background-image: url('https://www.transparenttextures.com/patterns/p6.png');
+            opacity: 0.25;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .content-wrap {
+            position: relative;
+            width: 100%; height: 100%;
+            transform-style: preserve-3d;
+            z-index: 10;
+        }
+
+        .section {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            width: 85%;
+            max-width: 800px;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(2.5rem, 6vw, 4.5rem);
+            color: var(--phad-gold);
+            margin-bottom: 1.5rem;
+            filter: drop-shadow(0 0 10px rgba(197, 160, 89, 0.3));
+        }
+
+        p {
+            font-size: 1.3rem;
+            line-height: 2;
+            font-weight: 300;
+        }
+
+        .vertical-line {
+            position: fixed;
+            left: 50%; top: 0;
+            width: 2px; height: 0%;
+            background: linear-gradient(to bottom, transparent, var(--phad-gold), transparent);
+            transform: translateX(-50%);
+            z-index: 5;
+            opacity: 0.6;
+            box-shadow: 0 0 20px var(--phad-gold);
+        }
+
+        .particle {
+            position: absolute;
+            background: var(--phad-gold);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        .black-out {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #000; z-index: 10000; pointer-events: none; opacity: 0;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="black-out"></div>
+    <div class="vertical-line"></div>
+    
+    <div class="viewport">
+        <div class="texture-overlay"></div>
+        <div id="particle-container"></div>
+        
+        <div class="content-wrap" id="main-content">
+            <div class="section">
+                <h2>The Unbroken Line</h2>
+                <p>From the first stroke in the 14th century to your screen today, the sacred line remains unbroken.</p>
+            </div>
+            <div class="section">
+                <h2>Beyond the Canvas</h2>
+                <p>Phad is no longer just paint on cloth. It is the identity of a people, a whispered prayer, and a loud celebration.</p>
+            </div>
+            <div class="section">
+                <h2>The Final Witness</h2>
+                <p>Every time you look at a Phad, you keep the legends alive for the next generation.</p>
+            </div>
+            <div class="section">
+                <h2>A Legacy Continued</h2>
+                <p>The scroll of Bhilwara now closes, but the story continues through you. <br><br><strong>Pranam.</strong></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        gsap.registerPlugin(ScrollTrigger);
+
+        // 1. Particle System
+        const pContainer = document.getElementById('particle-container');
+        for (let i = 0; i < 60; i++) {
+            const p = document.createElement('div');
+            p.className = 'particle';
+            const size = Math.random() * 3 + 1;
+            gsap.set(p, {
+                x: Math.random() * window.innerWidth,
+                y: Math.random() * window.innerHeight,
+                width: size, height: size,
+                z: Math.random() * -1500,
+                opacity: Math.random() * 0.5 + 0.2
+            });
+            pContainer.appendChild(p);
+
+            gsap.to(p, {
+                x: "+=" + (Math.random() * 100 - 50),
+                y: "+=" + (Math.random() * 100 - 50),
+                opacity: Math.random() * 0.8,
+                duration: Math.random() * 3 + 2,
+                repeat: -1, yoyo: true, ease: "sine.inOut"
+            });
+        }
+
+        // 2. Vertical Line Growth
+        gsap.to(".vertical-line", {
+            height: "100%",
+            scrollTrigger: {
+                trigger: "body",
+                start: "top top",
+                end: "bottom bottom",
+                scrub: 1
+            }
+        });
+
+        // 3. Sections Animation (Flying Past)
+        // We set the sections to finish by 85% of the total scroll
+        const sections = gsap.utils.toArray(".section");
+        sections.forEach((section, i) => {
+            gsap.timeline({
+                scrollTrigger: {
+                    trigger: "body",
+                    start: `${(i * 20)}% top`, 
+                    end: `${((i + 1) * 20)}% top`,
+                    scrub: 1.5,
+                }
+            })
+            .fromTo(section, 
+                { opacity: 0, z: -1000, filter: "blur(20px)" }, 
+                { opacity: 1, z: 0, filter: "blur(0px)", duration: 1 }
+            )
+            .to(section, 
+                { opacity: 0, z: 1000, filter: "blur(20px)", duration: 1 }, 
+                "+=0.5"
+            );
+        });
+
+        // 4. Particles fly forward
+        gsap.to(".particle", {
+            z: 1200,
+            ease: "none",
+            scrollTrigger: {
+                trigger: "body",
+                start: "top top",
+                end: "bottom bottom",
+                scrub: 1
+            }
+        });
+
+        // 5. THE FINALE: Hide Content -> Show BG Only -> Black Fade
+        const finalTl = gsap.timeline({
+            scrollTrigger: {
+                trigger: "body",
+                start: "85% top", // Trigger after the last text has passed
+                end: "100% bottom",
+                scrub: true
+            }
+        });
+
+        // Ensure text is gone and just the line/dots remain
+        finalTl.to("#main-content", { opacity: 0, duration: 1 })
+               .to(".vertical-line", { opacity: 1, scaleX: 1.5, duration: 1 }) // Subtle emphasis on the line
+               .to(".black-out", { opacity: 1, duration: 2 });
+
+        // Redirect on complete scroll
+        ScrollTrigger.create({
+            trigger: "body",
+            start: "99% bottom",
+            onEnter: () => {
+                sessionStorage.setItem('returnToStep', 'step8');
+                window.location.href = "index.html";
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Step 04: Likhi | The Master Timeline</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --phad-maroon: #5a0b0b;
+            --phad-cream: #f7f1e3;
+            --phad-gold: #c5a059;
+            --white: #ffffff;
+        }
+
+        body, html {
+            margin: 0; padding: 0;
+            background-color: var(--phad-maroon); 
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+            transition: background-color 0.8s ease;
+        }
+
+        .scroll-wrapper {
+            width: 550vw; 
+            display: flex;
+            flex-wrap: nowrap;
+        }
+
+        .panel {
+            width: 100vw; height: 100vh;
+            display: flex; justify-content: center; align-items: center;
+            position: relative; padding: 0 10vw; box-sizing: border-box;
+        }
+
+        /* UPDATED MOTIF STYLING FOR BETTER SPACING */
+        .motif-bg {
+            position: absolute;
+            width: 100%;
+            text-align: center;
+            font-family: 'Playfair Display', serif;
+            font-size: 30vw; /* Reduced slightly for better fit */
+            font-weight: 700;
+            color: var(--phad-gold);
+            opacity: 0.07;
+            z-index: 0;
+            pointer-events: none;
+            white-space: nowrap;
+            letter-spacing: 0.2em; /* Increased letter spacing */
+            text-transform: uppercase;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .portal-bar {
+            width: 50vw;
+            height: 100vh;
+            background: linear-gradient(to right, transparent, var(--phad-gold));
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: var(--phad-maroon);
+            border-left: 2px dashed var(--phad-gold);
+        }
+
+        .portal-text {
+            writing-mode: vertical-rl;
+            text-transform: uppercase;
+            letter-spacing: 8px;
+            font-weight: 800;
+            font-size: 1.5rem;
+            opacity: 0.8;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.8; }
+            50% { transform: scale(1.05); opacity: 1; }
+        }
+
+        .content-card {
+            position: relative; z-index: 2;
+            max-width: 650px; padding: 60px;
+            background: var(--white);
+            border-left: 10px solid var(--phad-gold);
+            box-shadow: 0 50px 100px rgba(0,0,0,0.3);
+            opacity: 0;
+            transform: translateY(50px);
+        }
+
+        .on-maroon .content-card { background: var(--phad-cream); }
+        .on-cream .content-card { background: var(--white); border-left-color: var(--phad-maroon); }
+
+        h2 { font-family: 'Playfair Display', serif; font-size: 3.5rem; margin: 0 0 20px 0; color: var(--phad-maroon); }
+        h2 span { display: block; font-size: 1.2rem; letter-spacing: 4px; color: var(--phad-gold); text-transform: uppercase; }
+        p { font-size: 1.15rem; line-height: 1.8; color: #333; }
+
+        .progress-bar { position: fixed; bottom: 0; left: 0; width: 0%; height: 8px; background: var(--phad-gold); z-index: 1000; }
+    </style>
+</head>
+<body>
+
+    <div class="progress-bar"></div>
+
+    <div class="scroll-wrapper">
+        <section class="panel on-maroon" data-bg="#5a0b0b">
+            <div class="motif-bg">LIKHI</div>
+            <div class="content-card">
+                <h2><span>Step 04</span>The First Ink</h2>
+                <p>The artist begins the permanent defining of figures using squirrel-hair brushes and handmade black ink.</p>
+            </div>
+        </section>
+
+        <section class="panel on-cream" data-bg="#f7f1e3">
+            <div class="motif-bg">SYAHI</div>
+            <div class="content-card">
+                <h2><span>Medium</span>Lampblack</h2>
+                <p>Syahi is crafted from oil-lamp soot mixed with gum arabic, ensuring the outline stays sharp for centuries.</p>
+            </div>
+        </section>
+
+        <section class="panel on-maroon" data-bg="#5a0b0b">
+            <div class="motif-bg">LINE</div>
+            <div class="content-card">
+                <h2><span>Style</span>Bold Strokes</h2>
+                <p>Every line is a deliberate choice. There is no room for error once the ink touches the starch-treated cloth.</p>
+            </div>
+        </section>
+
+        <section class="panel on-cream" data-bg="#f7f1e3">
+            <div class="motif-bg">FORM</div>
+            <div class="content-card">
+                <h2><span>Anatomy</span>Proportions</h2>
+                <p>Figures are drawn following traditional iconographic rules, where the size of the eye or hand denotes divinity.</p>
+            </div>
+        </section>
+
+        <section class="panel on-maroon" data-bg="#5a0b0b">
+            <div class="motif-bg">DONE</div>
+            <div class="content-card">
+                <h2><span>Finalize</span>End of Likhi</h2>
+                <p>The structure is complete. Continue scrolling through the portal to return to the master scroll.</p>
+            </div>
+        </section>
+
+        <div class="portal-bar">
+            <div class="portal-text">Next: Main Scroll</div>
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-top: 20px;">
+                <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+        </div>
+    </div>
+
+    <script>
+        gsap.registerPlugin(ScrollTrigger);
+        const sections = gsap.utils.toArray(".panel");
+        const wrapper = document.querySelector(".scroll-wrapper");
+
+        let scrollTween = gsap.to(".scroll-wrapper", {
+            x: () => -(wrapper.scrollWidth - window.innerWidth),
+            ease: "none",
+            scrollTrigger: {
+                trigger: ".scroll-wrapper",
+                pin: true,
+                scrub: 1.2, 
+                start: "top top",
+                end: () => "+=" + wrapper.offsetWidth,
+                onLeave: () => {
+                    sessionStorage.setItem('returnToStep', 'step4');
+                    window.location.href = "index.html";
+                }
+            }
+        });
+
+        sections.forEach((panel, i) => {
+            const color = panel.getAttribute("data-bg");
+            const card = panel.querySelector(".content-card");
+            const motif = panel.querySelector(".motif-bg");
+
+            ScrollTrigger.create({
+                trigger: panel,
+                containerAnimation: scrollTween,
+                start: "left center",
+                onEnter: () => gsap.to("body", { backgroundColor: color, duration: 0.6 }),
+                onLeaveBack: () => {
+                    const prevColor = sections[i-1] ? sections[i-1].getAttribute("data-bg") : "#5a0b0b";
+                    gsap.to("body", { backgroundColor: prevColor, duration: 0.6 });
+                }
+            });
+
+            gsap.to(card, {
+                opacity: 1, y: 0, duration: 0.8,
+                scrollTrigger: {
+                    trigger: panel,
+                    containerAnimation: scrollTween,
+                    start: "left 60%",
+                    toggleActions: "play none none reverse"
+                }
+            });
+
+            // Parallax motif with centered translation
+            gsap.fromTo(motif, { x: "20%" }, {
+                x: "-20%",
+                scrollTrigger: {
+                    trigger: panel,
+                    containerAnimation: scrollTween,
+                    start: "left right",
+                    end: "right left",
+                    scrub: true
+                }
+            });
+        });
+
+        gsap.to(".progress-bar", {
+            width: "100%", ease: "none",
+            scrollTrigger: {
+                trigger: ".scroll-wrapper",
+                start: "top top",
+                end: () => "+=" + wrapper.offsetWidth,
+                scrub: 0.5
+            }
+        });
+    </script>
+</body>
+</html>

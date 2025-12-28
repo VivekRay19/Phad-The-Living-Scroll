@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Step 03: Nirman | Phad Khulta Hai</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@900&family=Inter:wght@300;600&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --phad-dark-maroon: #2e0404;
+            --phad-vibrant-red: #bc2025;
+            --phad-cream: #FBF2D8;
+            --phad-yellow: #f4d03f;
+        }
+
+        body {
+            margin: 0;
+            background-color: var(--phad-dark-maroon);
+            color: var(--phad-cream);
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+            /* Smoother background color shifts */
+            transition: background-color 1.5s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        #exit-overlay {
+            position: fixed;
+            inset: 0;
+            background: #120303;
+            z-index: 999;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .scroll-container {
+            height: 1000vh; /* More breathing room for smoothness */
+            position: relative;
+        }
+
+        .viewport {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            perspective: 2000px; /* Increased perspective for deeper 3D */
+            overflow: hidden;
+        }
+
+        .main-portal {
+            position: absolute;
+            font-family: 'Playfair Display', serif;
+            font-size: 70vh;
+            color: var(--phad-vibrant-red);
+            opacity: 0.4;
+            z-index: 1;
+            user-select: none;
+            will-change: transform, opacity;
+        }
+
+        .layer {
+            position: absolute;
+            width: 80%;
+            max-width: 850px;
+            text-align: center;
+            opacity: 0;
+            /* Start slightly further back and blurred */
+            transform: translateZ(-1500px); 
+            filter: blur(10px);
+            pointer-events: none;
+            z-index: 10;
+            will-change: transform, opacity, filter;
+        }
+
+        .on-cream h2 { color: var(--phad-vibrant-red) !important; }
+        .on-cream p { color: #2e0404 !important; }
+
+        .layer h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(3rem, 8vw, 5.5rem);
+            margin: 0;
+            line-height: 1.1;
+            color: var(--phad-yellow);
+        }
+
+        .layer p {
+            font-size: clamp(1.1rem, 2vw, 1.7rem);
+            line-height: 1.7;
+            margin-top: 25px;
+            color: var(--phad-cream);
+            font-weight: 300;
+        }
+
+        .instruction {
+            position: fixed;
+            bottom: 40px;
+            width: 100%;
+            text-align: center;
+            font-size: 0.7rem;
+            letter-spacing: 5px;
+            text-transform: uppercase;
+            color: var(--phad-yellow);
+            z-index: 100;
+            opacity: 0.4;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="exit-overlay"></div>
+
+    <div class="scroll-container">
+        <div class="viewport">
+            <div class="main-portal" id="portal">3</div>
+
+            <div class="layer" id="step1">
+                <h2>The Syahi</h2>
+                <p>Bold outlines emerge from the soot. Lampblack defines heroes and horizons with absolute power.</p>
+            </div>
+
+            <div class="layer on-cream" id="step2">
+                <h2>The Shringar</h2>
+                <p>Intricate textures and royal ornaments are filled. The scroll awakens, glowing with the warmth of tradition.</p>
+            </div>
+
+            <div class="layer" id="step3">
+                <h2>Aakhein Kholna</h2>
+                <p>The climactic stroke. The artist opens the eyes of the deity, and the spirit finally enters the Phad.</p>
+            </div>
+
+            <div class="layer" id="step4">
+                <h2>Phad Poorn</h2>
+                <p>The creation is complete. A masterpiece of stone, spirit, and syahi. <br> Scroll to finish.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="instruction">Scroll slowly to unfold</div>
+
+    <script>
+        gsap.registerPlugin(ScrollTrigger);
+
+        const tl = gsap.timeline({
+            scrollTrigger: {
+                trigger: ".scroll-container",
+                start: "top top",
+                end: "bottom bottom",
+                scrub: 1.5, // Smoother follow-through
+                onLeave: () => {
+                    sessionStorage.setItem('returnToStep', 'step3');
+                    gsap.to("#exit-overlay", { 
+                        opacity: 1, 
+                        duration: 1, 
+                        ease: "power2.inOut",
+                        onComplete: () => { window.location.href = "index.html"; }
+                    });
+                }
+            }
+        });
+
+        // 1. Cinematic Portal Zoom
+        tl.to("#portal", { 
+            scale: 40, 
+            opacity: 0, 
+            filter: "blur(20px)",
+            duration: 3, 
+            ease: "power2.in" 
+        });
+
+        // 2. Ultra-Smooth Background Shifts
+        tl.to("body", { backgroundColor: "#FBF2D8", duration: 1.5 }, 3.5); 
+        tl.to("body", { backgroundColor: "#2e0404", duration: 1.5 }, 7.5);
+
+        // 3. Fluid Layering Logic
+        const steps = ["#step1", "#step2", "#step3", "#step4"];
+        
+        steps.forEach((id, index) => {
+            // Overlapping start times for fluidity
+            const startTime = 2 + (index * 3); 
+
+            // Entrance: Blur-to-Focus Fly-in
+            tl.to(id, {
+                opacity: 1,
+                z: 0,
+                filter: "blur(0px)",
+                duration: 2,
+                ease: "power4.out" // Elegant deceleration
+            }, startTime);
+
+            // Exit: Focused-to-Blur Fly-out
+            tl.to(id, {
+                opacity: 0,
+                z: 1200,
+                filter: "blur(15px)",
+                duration: 2,
+                ease: "power4.in" // Elegant acceleration
+            }, startTime + 2); 
+        });
+
+        // 4. Parallax Mouse with Dampening
+        window.addEventListener("mousemove", (e) => {
+            const x = (e.clientX / window.innerWidth - 0.5) * 10;
+            const y = (e.clientY / window.innerHeight - 0.5) * 10;
+            gsap.to(".viewport", { 
+                rotationY: x, 
+                rotationX: -y, 
+                duration: 2, 
+                ease: "power2.out" 
+            });
+        });
+    </script>
+</body>
+</html>

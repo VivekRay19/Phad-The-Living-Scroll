@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Step 07: Tradition | The Master Timeline</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --phad-maroon: #4a0808;
+            --phad-maroon-dark: #2d0505;
+            --phad-gold: #c5a059;
+            --phad-cream: #f7f1e3;
+            --black: #000000;
+        }
+
+        body, html {
+            margin: 0; padding: 0;
+            background-color: var(--black);
+            font-family: 'Inter', sans-serif;
+            color: var(--phad-cream);
+            overflow-x: hidden;
+        }
+
+        .horizontal-container {
+            display: flex;
+            width: 500vw; 
+            height: 100vh;
+            align-items: center;
+            background: radial-gradient(circle at center, var(--phad-maroon) 0%, var(--phad-maroon-dark) 100%);
+        }
+
+        .slide {
+            width: 100vw; height: 100vh;
+            display: flex; justify-content: center; align-items: center;
+            perspective: 2000px;
+        }
+
+        .focus-card {
+            width: 80%; max-width: 800px; padding: 4rem;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--phad-gold);
+            border-radius: 8px; text-align: center;
+            transform: translateX(100px) rotateY(30deg) scale(0.9);
+            opacity: 0; filter: blur(5px);
+            box-shadow: 0 50px 100px rgba(0,0,0,0.5);
+        }
+
+        h2 { font-family: 'Playfair Display', serif; font-size: clamp(2rem, 5vw, 3.5rem); margin: 0; color: var(--phad-gold); }
+        h2 span { display: block; font-size: 0.8rem; letter-spacing: 8px; text-transform: uppercase; color: var(--phad-cream); opacity: 0.7; margin-bottom: 1rem; }
+        p { font-size: 1.2rem; line-height: 1.8; color: var(--phad-cream); margin-top: 1.5rem; font-weight: 300; }
+
+        /* Exit Overlay - Black Fade out */
+        .exit-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--black); /* Pure black for the match */
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            z-index: 1000; visibility: hidden; opacity: 0;
+        }
+
+        .glowing-ring {
+            width: 100px; height: 100px;
+            border: 2px solid var(--phad-gold);
+            border-radius: 50%;
+            margin-bottom: 2rem;
+            position: relative;
+        }
+
+        /* Pulsing Glow Layer */
+        .glowing-ring::after {
+            content: '';
+            position: absolute; top: -5px; left: -5px; right: -5px; bottom: -5px;
+            border-radius: 50%;
+            border: 2px solid var(--phad-gold);
+            animation: ring-pulse 2s infinite;
+        }
+
+        .exit-text {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.2rem; letter-spacing: 5px;
+            color: var(--phad-gold); text-transform: uppercase;
+            font-weight: 400;
+        }
+
+        @keyframes ring-pulse {
+            0% { transform: scale(1); opacity: 1; box-shadow: 0 0 10px var(--phad-gold); }
+            100% { transform: scale(1.6); opacity: 0; box-shadow: 0 0 30px var(--phad-gold); }
+        }
+
+        /* Ambient Orbs */
+        .orb { position: fixed; width: 600px; height: 600px; background: var(--phad-gold); filter: blur(200px); border-radius: 50%; z-index: -1; opacity: 0.1; }
+        
+        .progress-circle { position: fixed; bottom: 40px; right: 40px; width: 70px; height: 70px; z-index: 200; }
+        .circle-bg { fill: none; stroke: rgba(255,255,255,0.05); stroke-width: 3; }
+        .circle-progress { fill: none; stroke: var(--phad-gold); stroke-width: 3; stroke-dasharray: 219.9; stroke-dashoffset: 219.9; transform: rotate(-90deg); transform-origin: center; }
+    </style>
+</head>
+<body>
+
+    <div class="exit-overlay">
+        <div class="glowing-ring"></div>
+        <div class="exit-text">Returning to Master Scroll</div>
+    </div>
+
+    <div class="orb" style="top: -10%; left: 10%;"></div>
+    <div class="orb" style="bottom: 10%; right: 20%; background: var(--phad-maroon);"></div>
+
+    <div class="progress-circle">
+        <svg width="70" height="70">
+            <circle class="circle-bg" cx="35" cy="35" r="35"></circle>
+            <circle class="circle-progress" cx="35" cy="35" r="35"></circle>
+        </svg>
+    </div>
+
+    <div class="horizontal-container">
+        <section class="slide"><div class="focus-card"><h2><span>Encounter</span>The Living Art</h2><p>Phad is not a relic of the past; it is a breathing tradition. Today, these scrolls are integrated into modern architecture and fashion.</p></div></section>
+        <section class="slide"><div class="focus-card"><h2><span>Community</span>Collective Memory</h2><p>Every Phad performance is a community event. It brings people together to celebrate history and morality through storytelling.</p></div></section>
+        <section class="slide"><div class="focus-card"><h2><span>Innovation</span>Digital Phad</h2><p>Artists are now experimenting with digital mediums, blending ancient brushstrokes with modern pixels.</p></div></section>
+        <section class="slide"><div class="focus-card"><h2><span>Your Turn</span>Become a Custodian</h2><p>By exploring this journey, you are now a witness to the craft. The survival of Phad depends on the eyes that watch it.</p></div></section>
+        <section class="slide"><div class="focus-card"><h2><span>Pranam</span>End of the Scroll</h2><p>The epic of the Phad has been fully told. Scroll once more to return to the heart of the masterpiece.</p></div></section>
+    </div>
+
+    <script>
+        gsap.registerPlugin(ScrollTrigger);
+
+        const container = document.querySelector(".horizontal-container");
+        const slides = gsap.utils.toArray(".focus-card");
+
+        let scrollTween = gsap.to(container, {
+            x: () => -(container.scrollWidth - window.innerWidth),
+            ease: "none",
+            scrollTrigger: {
+                trigger: ".horizontal-container",
+                pin: true,
+                scrub: 1,
+                end: () => "+=" + container.scrollWidth,
+                onUpdate: (self) => {
+                    const offset = 219.9 - (self.progress * 219.9);
+                    gsap.to(".circle-progress", { strokeDashoffset: offset, duration: 0.1 });
+                },
+                onLeave: () => {
+                    // Start the Black Fade Out
+                    const tl = gsap.timeline({
+                        onComplete: () => {
+                            sessionStorage.setItem('returnToStep', 'step7');
+                            window.location.href = "index.html";
+                        }
+                    });
+
+                    tl.to(".exit-overlay", { 
+                        autoAlpha: 1, 
+                        duration: 1.2, 
+                        ease: "power2.inOut" 
+                    })
+                    .to({}, { duration: 1.5 }); // Hold on the black screen/ring for a moment
+                }
+            }
+        });
+
+        // Carousel Animation logic
+        slides.forEach((card) => {
+            gsap.timeline({
+                scrollTrigger: {
+                    trigger: card.closest('.slide'),
+                    containerAnimation: scrollTween,
+                    start: "left right",
+                    end: "right left",
+                    scrub: true,
+                }
+            })
+            .fromTo(card, 
+                { opacity: 0, scale: 0.8, rotateY: 40, x: 100, filter: "blur(10px)" },
+                { opacity: 1, scale: 1, rotateY: 0, x: 0, filter: "blur(0px)", ease: "none", duration: 0.5 }
+            )
+            .to(card, 
+                { opacity: 0, scale: 0.8, rotateY: -40, x: -100, filter: "blur(10px)", ease: "none", duration: 0.5 },
+                "+=0.4"
+            );
+        });
+
+        // Orb movement
+        gsap.to(".orb", {
+            x: "random(-100, 100)", y: "random(-100, 100)",
+            duration: 8, repeat: -1, yoyo: true, ease: "sine.inOut"
+        });
+    </script>
+</body>
+</html>

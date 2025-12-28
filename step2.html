@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Step 02: Rang | Phad Khulta Hai</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/Observer.min.js"></script>
+
+<style>
+/* ───────────────── RESET & BASE ───────────────── */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { height: 100%; width: 100%; overflow: hidden; touch-action: none; }
+body { font-family: Georgia, serif; color: #FBF2D8; background: #120303; }
+
+/* ───────────────── TRANSITION OVERLAYS ───────────────── */
+#exit-overlay {
+  position: fixed;
+  inset: 0;
+  background: #120303;
+  z-index: 999;
+  opacity: 1; /* Starts dark for intro */
+  pointer-events: none;
+}
+
+/* ───────────────── LIVING BACKGROUND ───────────────── */
+.bg {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(circle at 30% 40%, #7A0C0C, #120303);
+  transition: background 1.6s cubic-bezier(0.22, 1, 0.36, 1);
+  z-index: -2;
+}
+.bg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url("https://grainy-gradients.vercel.app/noise.svg");
+  opacity: 0.12;
+  pointer-events: none;
+}
+
+.timeline { height: 100vh; width: 100%; position: relative; }
+
+.scene {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10vh 8vw;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(60px);
+}
+
+.scene.active {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+  transition: opacity 1.1s ease, transform 1.1s ease;
+}
+
+.content { max-width: 640px; text-align: center; }
+.eyebrow { font-size: 0.9rem; letter-spacing: 2px; text-transform: uppercase; opacity: 0.6; margin-bottom: 18px; }
+h1 { font-size: 3.2rem; line-height: 1.15; margin-bottom: 24px; }
+p { font-size: 1.2rem; line-height: 1.7; opacity: 0.9; }
+
+/* Themes */
+.scene[data-bg="yellow"] { --bg: radial-gradient(circle at 30% 40%, #7A0C0C, #120303); }
+.scene[data-bg="saffron"] { --bg: radial-gradient(circle at 60% 50%, #FBF2D8, #CFAE70); }
+.scene[data-bg="green"] { --bg: radial-gradient(circle at 40% 60%, #2A0505, #120303); }
+.scene[data-bg="return"] { --bg: radial-gradient(circle at 50% 40%, #7A0C0C, #120303); }
+
+.scene[data-bg="saffron"] { color: #7A0C0C; }
+
+.cue { position: fixed; bottom: 28px; right: 36px; font-size: 0.8rem; letter-spacing: 1px; opacity: 0.5; z-index: 100; }
+</style>
+</head>
+
+<body>
+
+<div id="exit-overlay"></div>
+<div class="bg" id="bg"></div>
+
+<div class="timeline" id="main-timeline">
+  <section class="scene active" data-bg="yellow">
+    <div class="content">
+      <div class="eyebrow">Step 02: Rang</div>
+      <h1>Stone Becomes Spirit</h1>
+      <p>In Phad, colors are never bought; they are birthed. Raw minerals and stones are hand-ground for days until the earth itself learns to speak the language of deities.</p>
+    </div>
+  </section>
+
+  <section class="scene" data-bg="saffron">
+    <div class="content">
+      <div class="eyebrow">The Alchemy</div>
+      <h1>Hinglu & Hartal</h1>
+      <p><strong>Hartal</strong> (Orpiment) for the golden skin of heroes. <strong>Hinglu</strong> (Cinnabar) for the crimson blood of battle. Each pigment is bound with handmade glue from the Babul tree.</p>
+    </div>
+  </section>
+
+  <section class="scene" data-bg="green">
+    <div class="content">
+      <div class="eyebrow">The Order</div>
+      <h1>A Sequence of Life</h1>
+      <p>Coloring follows a sacred order. Yellow first for ornaments, then Green for nature, Brown for architecture, and finally the Blue of the heavens. Red is reserved for the climax.</p>
+    </div>
+  </section>
+
+  <section class="scene" data-bg="return" id="final-scene">
+    <div class="content">
+      <div class="eyebrow">The Circle Completes</div>
+      <h1>Return to the Scroll</h1>
+      <p>The palette is set. The brushes are ready. <br> Scroll down once more to return to the master timeline.</p>
+    </div>
+  </section>
+</div>
+
+<div class="cue" id="cue-text">scroll to move ↓</div>
+
+<script>
+gsap.registerPlugin(Observer);
+
+let currentIndex = 0;
+const scenes = document.querySelectorAll(".scene");
+const bg = document.getElementById("bg");
+const cueText = document.getElementById("cue-text");
+const overlay = document.getElementById("exit-overlay");
+let animating = true; 
+
+/* ───────────────── INTRO ANIMATION ───────────────── */
+window.addEventListener("DOMContentLoaded", () => {
+    const tl = gsap.timeline({
+        onComplete: () => { animating = false; }
+    });
+
+    tl.to(overlay, { opacity: 0, duration: 1.2, ease: "power2.inOut" })
+      .from(".active .content > *", { 
+          y: 40, 
+          opacity: 0, 
+          stagger: 0.2, 
+          duration: 1, 
+          ease: "power3.out" 
+      }, "-=0.6");
+});
+
+/* ───────────────── NAVIGATION & EXIT ───────────────── */
+function move(index) {
+    if (index >= scenes.length) {
+        if (animating) return;
+        animating = true;
+        
+        sessionStorage.setItem('returnToStep', 'step2');
+
+        const outroTl = gsap.timeline();
+        
+        outroTl.to(".scene.active .content", {
+            scale: 0.85,
+            opacity: 0,
+            duration: 0.7,
+            ease: "power2.in"
+        })
+        .to(overlay, { 
+            opacity: 1, 
+            duration: 0.6, 
+            ease: "none" 
+        }, "-=0.3")
+        .add(() => {
+            window.location.href = "index.html";
+        });
+        
+        return;
+    }
+
+    if (animating || index < 0) return;
+    animating = true;
+
+    const current = scenes[currentIndex];
+    const next = scenes[index];
+
+    bg.style.background = getComputedStyle(next).getPropertyValue("--bg");
+    currentIndex = index;
+
+    current.classList.remove("active");
+    next.classList.add("active");
+
+    if (currentIndex === scenes.length - 1) {
+        cueText.innerText = "Scroll to Exit ↓";
+    } else {
+        cueText.innerText = "scroll to move ↓";
+    }
+
+    setTimeout(() => { animating = false; }, 1200);
+}
+
+Observer.create({
+    target: window,
+    type: "wheel,touch,pointer",
+    onDown: () => !animating && move(currentIndex + 1),   
+    onUp: () => !animating && move(currentIndex - 1), 
+    tolerance: 10,
+    preventDefault: true
+});
+</script>
+</body>
+</html>

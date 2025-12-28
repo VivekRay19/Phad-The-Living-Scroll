@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Step 01: Kharat | Phad Khulta Hai</title>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/Observer.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@300;400;600&family=Sahitya:wght@400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --maroon: #5a0b0b;
+            --cream: #f4f1ea;
+            --gold: #b38b4d;
+            --black-fade: #120303; /* Matches the index.html curtain color */
+        }
+
+        body, html {
+            margin: 0; padding: 0;
+            height: 100%; width: 100%;
+            overflow: hidden; 
+            background-color: var(--maroon);
+            font-family: 'Sahitya', serif;
+            touch-action: none;
+        }
+
+        /* The Exit Overlay - Handles the black fade out */
+        #exit-overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background-color: var(--black-fade);
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* The Expansion Circle */
+        .ink-drop {
+            position: absolute;
+            top: 50%; left: 50%;
+            width: 250vmax; height: 250vmax;
+            background-color: var(--cream);
+            border-radius: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            z-index: 5;
+            pointer-events: none;
+        }
+
+        .bubble {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(60px);
+            z-index: 6;
+            opacity: 0.3;
+            pointer-events: none;
+        }
+
+        .slide {
+            position: absolute;
+            width: 100%; height: 100%;
+            display: flex; justify-content: center; align-items: center;
+            padding: 0 10%; box-sizing: border-box;
+            opacity: 0; visibility: hidden;
+            z-index: 10;
+        }
+
+        .slide.active { opacity: 1; visibility: visible; }
+
+        .content-box { max-width: 900px; text-align: center; }
+
+        h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(2.5rem, 7vw, 5.5rem);
+            margin: 0 0 20px 0;
+            color: var(--maroon);
+            line-height: 1.1;
+        }
+
+        .description {
+            font-size: clamp(1.1rem, 1.6vw, 1.35rem);
+            line-height: 1.8;
+            color: #1a1a1a;
+            opacity: 0;
+            transform: translateY(30px);
+            margin-bottom: 35px;
+        }
+
+        .metadata {
+            font-size: 0.8rem;
+            letter-spacing: 5px;
+            text-transform: uppercase;
+            color: var(--gold);
+            border-top: 1px solid rgba(90, 11, 11, 0.2);
+            padding-top: 20px;
+            display: inline-block;
+        }
+
+        .hud {
+            position: fixed;
+            bottom: 40px; right: 40px;
+            z-index: 100;
+            font-size: 0.7rem;
+            letter-spacing: 2px;
+            color: var(--maroon);
+            opacity: 0.5;
+        }
+
+        .scroll-hint {
+            position: fixed;
+            bottom: 40px; left: 50%;
+            transform: translateX(-50%);
+            z-index: 100;
+            font-size: 0.6rem;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            color: var(--maroon);
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
+    </style>
+</head>
+<body>
+
+    <div id="exit-overlay"></div>
+    <div class="ink-drop" id="circle"></div>
+    
+    <div id="bubbles-container">
+        <div class="bubble" style="width: 400px; height: 400px; background: var(--gold); top: -10%; left: -5%;"></div>
+        <div class="bubble" style="width: 300px; height: 300px; background: var(--maroon); bottom: 10%; right: -5%;"></div>
+    </div>
+
+    <section class="slide active" id="sec-1">
+        <div class="content-box">
+            <div class="metadata" style="border:none; padding:0; margin-bottom:10px;">Step 01</div>
+            <h1>Kharat: The Rebirth of Cloth</h1>
+            <p class="description">
+                Before a single drop of pigment touches the canvas, the cloth must be birthed. 
+                <strong>Kharat</strong> is the ritual of transformation where raw, hand-woven Khadi 
+                is prepared to hold the weight of divine legends.
+            </p>
+            <div class="metadata">Bhilwara • Canvas Preparation</div>
+        </div>
+    </section>
+
+    <section class="slide" id="sec-2">
+        <div class="content-box">
+            <h1>The Sacred Kalap</h1>
+            <p class="description">
+                A starch made of boiled wheat flour and <i>Gond</i> (local resin) is manually rubbed 
+                into the fibers. This "Kalap" makes the cotton non-porous, ensuring that the 
+                mineral colors sit majestically atop the surface rather than soaking through.
+            </p>
+            <div class="metadata">Maida • Natural Resin • Starching</div>
+        </div>
+    </section>
+
+    <section class="slide" id="sec-3">
+        <div class="content-box">
+            <h1>The Mohra Finish</h1>
+            <p class="description">
+                The final touch is the <strong>Ghonta</strong>. Using a smooth agate stone 
+                called a <i>Mohra</i>, the artist burnishes the dried cloth until it acquires 
+                the texture of ivory and a subtle, celestial sheen.
+            </p>
+            <div class="metadata">Agate Stone • Burnishing • Final Polish</div>
+        </div>
+    </section>
+
+    <div class="scroll-hint" id="hint">Scroll Down to Explore</div>
+    <div class="hud" id="page-num">01 / 03</div>
+
+    <script>
+        gsap.registerPlugin(Observer);
+
+        let currentIndex = 0;
+        const slides = document.querySelectorAll(".slide");
+        const circle = document.getElementById("circle");
+        const pageNum = document.getElementById("page-num");
+        const hint = document.getElementById("hint");
+        const bubbles = document.querySelectorAll(".bubble");
+        const exitOverlay = document.getElementById("exit-overlay");
+        let animating = false;
+
+        // 1. ENTRANCE ANIMATION
+        window.addEventListener("load", () => {
+            const tl = gsap.timeline();
+            tl.to(circle, {
+                scale: 1,
+                duration: 2,
+                ease: "expo.inOut"
+            })
+            .to("#sec-1 .description", { 
+                opacity: 1, 
+                y: 0, 
+                duration: 1 
+            }, "-=0.5");
+        });
+
+        // Bubble Motion
+        bubbles.forEach((bubble) => {
+            gsap.to(bubble, {
+                x: "random(-100, 100)",
+                y: "random(-100, 100)",
+                duration: "random(10, 20)",
+                repeat: -1,
+                yoyo: true,
+                ease: "sine.inOut"
+            });
+        });
+
+        function exitToMain() {
+            animating = true;
+            const tl = gsap.timeline();
+            
+            // Fade content out and pull the black curtain over the world
+            tl.to(".content-box, .bubble, .hud, .scroll-hint", { 
+                opacity: 0, 
+                y: -30, 
+                duration: 0.6 
+            })
+            .to(exitOverlay, { 
+                opacity: 1, 
+                duration: 0.8, 
+                ease: "power2.inOut" 
+            }, "-=0.3")
+            .to(circle, { 
+                scale: 0, 
+                duration: 1.2, 
+                ease: "expo.inOut",
+                onComplete: () => {
+                    sessionStorage.setItem('returnToStep', 'step1');
+                    window.location.href = "index.html";
+                }
+            }, "-=0.6");
+        }
+
+        function move(index, direction) {
+            // Trigger exit if scrolling past the last slide
+            if (index >= slides.length && direction === 1) {
+                exitToMain();
+                return;
+            }
+
+            if (animating || index < 0 || index >= slides.length) return;
+            animating = true;
+
+            const current = slides[currentIndex];
+            const next = slides[index];
+
+            const tl = gsap.timeline({
+                onComplete: () => { 
+                    animating = false; 
+                    currentIndex = index;
+                    pageNum.innerText = `0${index + 1} / 03`;
+                    hint.innerText = (index === 2) ? "Scroll Down to Return" : "Scroll Down to Explore";
+                }
+            });
+
+            tl.to(circle, { scale: 0.85, duration: 0.4, ease: "power2.in" }, 0);
+            tl.to(current, { opacity: 0, y: direction * -50, duration: 0.4 }, 0);
+            
+            tl.set(current, { visibility: "hidden" });
+            tl.set(next, { visibility: "visible", y: direction * 50 });
+
+            tl.to(circle, { scale: 1, duration: 0.8, ease: "expo.out" }, 0.4);
+            tl.to(next, { opacity: 1, y: 0, duration: 0.7, ease: "power3.out" }, 0.4);
+
+            tl.to(next.querySelector(".description"), {
+                opacity: 1,
+                y: 0,
+                duration: 0.8,
+                ease: "power2.out"
+            }, 0.6);
+        }
+
+        Observer.create({
+            target: window,
+            type: "wheel,touch,pointer",
+            onUp: () => !animating && move(currentIndex + 1, 1),   
+            onDown: () => !animating && move(currentIndex - 1, -1), 
+            wheelSpeed: -1,
+            tolerance: 10,
+            preventDefault: true
+        });
+    </script>
+</body>
+</html>

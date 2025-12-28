@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Step 06: Legacy | The Master Timeline</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --phad-maroon: #5a0b0b;
+            --phad-cream: #f7f1e3;
+            --phad-gold: #c5a059;
+            --white: #ffffff;
+            --black: #000000;
+        }
+
+        body, html {
+            margin: 0; padding: 0;
+            background-color: var(--black);
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+            color: var(--white);
+        }
+
+        .stack-container {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+            background: var(--black);
+        }
+
+        .step-card {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            /* Cards are stacked; z-index handled in CSS */
+        }
+
+        .card-inner {
+            width: 90%;
+            max-width: 1000px;
+            height: 80vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 3rem;
+            box-sizing: border-box;
+            box-shadow: 0 40px 100px rgba(0,0,0,0.9);
+            text-align: center;
+            border-radius: 8px;
+        }
+
+        /* Essential: Static Z-indexing to ensure they stack correctly at start */
+        #card1 { z-index: 4; background-color: var(--phad-maroon); color: var(--phad-cream); }
+        #card2 { z-index: 3; background-color: var(--white); color: var(--phad-maroon); border: 15px solid var(--phad-maroon); }
+        #card3 { z-index: 2; background-color: var(--phad-cream); color: var(--phad-maroon); border: 2px solid var(--phad-gold); }
+        #card4 { z-index: 1; background-color: var(--phad-maroon); color: var(--phad-cream); }
+
+        h2 { 
+            font-family: 'Playfair Display', serif; 
+            font-size: clamp(2.5rem, 6vw, 4.5rem); 
+            margin: 0 0 1.5rem 0; 
+            line-height: 1.1;
+        }
+        
+        h2 span { 
+            display: block; 
+            font-size: 1rem; 
+            letter-spacing: 6px; 
+            text-transform: uppercase; 
+            margin-bottom: 1rem; 
+            color: var(--phad-gold); 
+        }
+
+        #card2 h2 span { color: var(--phad-maroon); opacity: 0.6; }
+
+        p { 
+            font-size: clamp(1.2rem, 2.5vw, 1.5rem); 
+            line-height: 1.7; 
+            max-width: 800px; 
+            font-weight: 400;
+        }
+
+        .exit-timer {
+            position: fixed;
+            top: 0; left: 0; width: 0%; height: 10px;
+            background: var(--phad-gold);
+            z-index: 1000;
+        }
+
+        .scroll-hint {
+            position: fixed;
+            bottom: 30px;
+            width: 100%;
+            text-align: center;
+            color: var(--phad-gold);
+            font-size: 0.8rem;
+            letter-spacing: 5px;
+            text-transform: uppercase;
+            z-index: 100;
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="exit-timer"></div>
+    <div class="scroll-hint">Scroll to Peel the Legacy</div>
+
+    <div class="stack-container">
+        <section class="step-card" id="card1">
+            <div class="card-inner">
+                <h2><span>The Final Rite</span>The Master's Signature</h2>
+                <p>In the Phad tradition, the painting is "blind" until the very end. The artist completes the work by signing their name and painting the pupils of the eyes. This act, known as <i>Aankh Phodna</i>, awakens the deity within.</p>
+            </div>
+        </section>
+
+        <section class="step-card" id="card2">
+            <div class="card-inner">
+                <h2><span>Beyond The Canvas</span>A Mobile Temple</h2>
+                <p>A Phad is never meant for a gallery. It is a sacred tool for the <strong>Bhopas and Bhopis</strong>—folk priests who travel from village to village, unfurling the epic under the stars for local communities.</p>
+            </div>
+        </section>
+
+        <section class="step-card" id="card3">
+            <div class="card-inner">
+                <h2><span>700 Years</span>The Custodians</h2>
+                <p>For seven centuries, the <strong>Joshi family of Bhilwara</strong> has been the sole keeper of this craft. By breaking ancient secrecy, they ensured that the Phad legacy would never vanish from the earth.</p>
+            </div>
+        </section>
+
+        <section class="step-card" id="card4">
+            <div class="card-inner">
+                <h2><span>Endless Scroll</span>The Next Chapter</h2>
+                <p>The journey from a plain piece of cloth to a divine epic is complete. You have witnessed the patience, the minerals, and the devotion of Phad. <br><br><strong>Scroll to return to the heart of the project.</strong></p>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        gsap.registerPlugin(ScrollTrigger);
+
+        const cards = gsap.utils.toArray(".step-card");
+        
+        // Single Master Timeline to control everything
+        const masterTl = gsap.timeline({
+            scrollTrigger: {
+                trigger: ".stack-container",
+                start: "top top",
+                end: () => "+=" + (window.innerHeight * cards.length * 1.5), // More scroll space
+                pin: true,
+                scrub: 1,
+                onUpdate: (self) => {
+                    gsap.to(".exit-timer", { width: (self.progress * 100) + "%", duration: 0.1 });
+                },
+                onLeave: () => {
+                    sessionStorage.setItem('returnToStep', 'step6');
+                    window.location.href = "index.html";
+                }
+            }
+        });
+
+        // Sequence: Slide Card 1 -> Show Card 2 -> Slide Card 2 -> Show Card 3...
+        cards.forEach((card, i) => {
+            // If it's not the last card, animate it moving OFF screen
+            if (i < cards.length - 1) {
+                masterTl.to(card, {
+                    yPercent: -100,
+                    ease: "power1.inOut",
+                    duration: 1
+                });
+                
+                // Animate the NEXT card content sliding in slightly
+                const nextCardContent = cards[i+1].querySelector(".card-inner");
+                masterTl.from(nextCardContent, {
+                    y: 100,
+                    opacity: 0,
+                    duration: 0.5
+                }, "<"); // Starts at the same time as the slide
+            }
+        });
+
+    </script>
+</body>
+</html>
