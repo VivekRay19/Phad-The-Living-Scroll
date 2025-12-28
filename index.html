@@ -117,8 +117,14 @@ body.ready-to-show #root {
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useRef, useEffect } = React;
-        const { motion, useScroll, useTransform } = window.Motion;
+const { useRef, useEffect } = React;
+
+// Robust check for Framer Motion CDN naming
+const motionData = window.Motion || window.framerMotion;
+if (!motionData) {
+    console.error("Framer Motion not found! Check CDN scripts.");
+}
+const { motion, useScroll, useTransform } = motionData || {};
 
         /* HERO SECTION: The grand opening with parallax numbering */
         const Hero = () => (
