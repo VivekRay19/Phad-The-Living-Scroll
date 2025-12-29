@@ -400,62 +400,83 @@ const { motion, useScroll, useTransform } = motionData || {};
 
 <script>
 (function() {
+    // 1. Force the browser to stop its default scroll restoration
+    if ('scrollRestoration' in history) {
+        history.scrollRestoration = 'manual';
+    }
+
     const returnStep = sessionStorage.getItem('returnToStep');
     const body = document.body;
     const curtain = document.getElementById('portal-curtain');
 
-    // SCENARIO A: Normal visit or Step 1 (Show Cream immediately)
-    if (!returnStep || returnStep === 'step1') {
+    const revealPage = () => {
         body.classList.add('ready-to-show');
-        curtain.style.opacity = "0";
-        
-        // If it's step 1, we still need to trigger the smooth scroll
-        if (returnStep === 'step1') {
-            handleScroll('step1', true);
+        if (curtain) {
+            curtain.style.opacity = "0";
+            setTimeout(() => { curtain.style.display = "none"; }, 800);
         }
-    } 
-    // SCENARIO B: Returning from Step 2 or 3 (Stay Black)
-    else {
-        handleScroll(returnStep, false);
-    }
+    };
 
-    function handleScroll(step, isSmooth) {
+    function handleScroll(step) {
+        let attempts = 0;
+        const maxAttempts = 100; // Try for up to 5 seconds
+
         const checkExist = setInterval(() => {
             const cards = document.querySelectorAll('.timeline-card');
+            attempts++;
+
+            // Wait until React has rendered the cards
             if (cards.length > 0) {
-                let targetElement = null;
-                const stepNum = step.replace('step', '').padStart(2, '0');
+                clearInterval(checkExist);
                 
-                cards.forEach(card => {
-                    if (card.innerText.includes("Step " + stepNum)) targetElement = card;
-                });
+                const stepNum = step.replace('step', '').padStart(2, '0');
+                let targetElement = Array.from(cards).find(card => 
+                    card.innerText.includes("Step " + stepNum)
+                );
 
                 if (targetElement) {
                     const rect = targetElement.getBoundingClientRect();
                     const topPos = rect.top + window.pageYOffset - (window.innerHeight / 4);
-                    
-                    if (isSmooth) {
-                        // Step 1 logic
-                        window.scrollTo({ top: 0, behavior: 'auto' });
+
+                    if (step === 'step1') {
+                        // For Step 1: Start at top, then glide down smoothly
+                        window.scrollTo(0, 0);
+                        revealPage();
                         setTimeout(() => {
                             window.scrollTo({ top: topPos, behavior: 'smooth' });
                             sessionStorage.removeItem('returnToStep');
-                        }, 100);
+                        }, 600);
                     } else {
-                        // Step 2/3 logic
+                        // For other steps: Jump instantly while black, then fade in
                         window.scrollTo({ top: topPos, behavior: 'auto' });
                         setTimeout(() => {
-                            body.classList.add('ready-to-show');
-                            curtain.style.opacity = "0";
+                            revealPage();
                             sessionStorage.removeItem('returnToStep');
-                        }, 500);
+                        }, 300);
                     }
-                    clearInterval(checkExist);
+                } else {
+                    revealPage(); // Fallback if specific card not found
                 }
+            }
+
+            if (attempts > maxAttempts) {
+                clearInterval(checkExist);
+                revealPage();
             }
         }, 50);
     }
+
+    // Initialize Logic
+    if (returnStep) {
+        handleScroll(returnStep);
+    } else {
+        // Normal first-time visit
+        window.scrollTo(0, 0);
+        revealPage();
+    }
 })();
 </script>
+</body>
+</html>
 </body>
 </html>
