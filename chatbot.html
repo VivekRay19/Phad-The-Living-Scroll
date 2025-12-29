@@ -113,20 +113,14 @@
         
         // Dense Left-to-Right Wave Background
         const FlowerWaveBackground = () => {
-            const flowerTypes = ["❀", "", "❁", ""];
-            // Increased count to 70 for a dense wave feel
+            const flowerTypes = ["❀", "✿", "❁", "✾"];
             const flowers = useMemo(() => Array.from({ length: 70 }).map((_, i) => ({
                 id: i,
                 symbol: flowerTypes[Math.floor(Math.random() * flowerTypes.length)],
-                // Spread vertically across the entire screen height plus buffer
                 top: `${Math.random() * 120 - 10}%`, 
-                // Speeds between 25s and 55s for varying flow
                 duration: `${25 + Math.random() * 30}s`, 
-                // Negative delay ensures screen is full on load
                 delay: `-${Math.random() * 55}s`,
-                // Varied sizes
                 size: `${14 + Math.random() * 20}px`,
-                // Initial rotation for variety
                 initialRotation: Math.random() * 360
             })), []);
 
@@ -152,7 +146,7 @@
         };
 
         // Interactive Cursor-Following Bhopa (CONSTRAINED)
-        const AnimatedBhopa = ({ isTyping }) => {
+        const AnimatedBhopa = ({ isTyping, statusText }) => {
             const [mouseOffset, setMouseOffset] = useState({ x: 0, y: 0 });
             const containerRef = useRef(null);
 
@@ -164,8 +158,7 @@
                     const centerX = rect.left + rect.width / 2;
                     const centerY = rect.top + rect.height / 2;
 
-                    // INCREASED DAMPENING SIGNIFICANTLY so he stays inside the circle
-                    // Higher number = less movement
+                    // INCREASED DAMPENING to keep him inside
                     const dampen = 90; 
                     const moveX = (e.clientX - centerX) / dampen;
                     const moveY = (e.clientY - centerY) / dampen;
@@ -201,15 +194,15 @@
                         transition={isTyping ? { 
                             repeat: Infinity, duration: 0.4 
                         } : { 
-                            // Stiffer spring for subtle movement
                             type: "spring", stiffness: 120, damping: 20 
                         }}
                     >
                         👳🏽‍♂️
                     </motion.div>
                     
-                    <div className={`absolute -bottom-2 px-3 py-0.5 rounded-full text-[9px] font-bold tracking-widest uppercase border border-[#fbbf24]/50 shadow-sm transition-colors duration-500 ${isTyping ? "bg-[#fbbf24] text-[#600000]" : "bg-[#8B0000] text-[#fbbf24]"}`}>
-                        {isTyping ? "Speaking" : "Listening"}
+                    {/* Status Badge: Shows "Connecting to spirits..." if failed, else Speaking/Listening */}
+                    <div className={`absolute -bottom-2 px-3 py-0.5 rounded-full text-[9px] font-bold tracking-widest uppercase border border-[#fbbf24]/50 shadow-sm transition-colors duration-500 whitespace-nowrap z-50 ${isTyping ? "bg-[#fbbf24] text-[#600000]" : "bg-[#8B0000] text-[#fbbf24]"}`}>
+                        {statusText ? statusText : (isTyping ? "Speaking" : "Listening")}
                     </div>
                 </div>
             );
@@ -227,20 +220,33 @@
         const ChatApp = () => {
             const [messages, setMessages] = useState([{ sender: 'bhopa', text: 'Khamma Ghani, Hukum! I am the Digital Bhopa. What story shall we unravel today?' }]);
             const [isTyping, setIsTyping] = useState(false);
+            const [statusText, setStatusText] = useState(""); // New State for connection status
             const [input, setInput] = useState("");
             const bottomRef = useRef(null);
             const activeKeyIndex = useRef(0);
 
             useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages, isTyping]);
 
-            // --- API Logic ---
+            // --- Robust API Logic with Forced Rotation ---
             const callAI = async (userText) => {
-                for (const model of AI_MODELS) {
-                    while (true) {
-                        if (activeKeyIndex.current >= API_KEYS_LIST.length) return "The lantern oil has run dry. Please try again later.";
-                        let apiKey;
-                        try { apiKey = atob(API_KEYS_LIST[activeKeyIndex.current]); } catch(e) { activeKeyIndex.current++; continue; }
-                        
+                const totalKeys = API_KEYS_LIST.length;
+                let attempts = 0;
+
+                // Loop through keys until one works or we run out of keys
+                while (attempts < totalKeys) {
+                    // 1. Get current key
+                    let apiKey;
+                    try { 
+                        apiKey = atob(API_KEYS_LIST[activeKeyIndex.current]); 
+                    } catch(e) { 
+                        // If key is broken, skip to next immediately
+                        activeKeyIndex.current = (activeKeyIndex.current + 1) % totalKeys;
+                        attempts++;
+                        continue;
+                    }
+
+                    // 2. Try Models with this Key
+                    for (const model of AI_MODELS) {
                         try {
                             const response = await fetch(API_URL, {
                                 method: "POST",
@@ -250,17 +256,40 @@
                                     messages: [{ role: "system", content: SYSTEM_PROMPT }, ...messages.map(m => ({ role: m.sender === 'user' ? 'user' : 'assistant', content: m.text })), { role: "user", content: userText }]
                                 })
                             });
-                            if ([401, 402, 403, 429].includes(response.status)) { activeKeyIndex.current++; continue; }
+
                             const data = await response.json();
-                            const errorMsg = data?.error?.message || "";
-                            if (errorMsg.toLowerCase().includes("quota") || errorMsg.toLowerCase().includes("credit")) { activeKeyIndex.current++; continue; }
-                            if (!response.ok || data.error) break;
-                            if (!data.choices || !data.choices[0]) throw new Error("Empty");
-                            return data.choices[0].message.content.replace(/<s>/g, "").replace(/<\/s>/g, "").trim();
-                        } catch (err) { break; }
+
+                            // If we see an error object or bad status, throw to trigger catch block below
+                            if (!response.ok || data.error) {
+                                throw new Error("API Error"); 
+                            }
+                            
+                            // If successful, return immediately!
+                            if (data.choices && data.choices[0]) {
+                                return data.choices[0].message.content.replace(/<s>/g, "").replace(/<\/s>/g, "").trim();
+                            }
+                        } catch (err) {
+                            // Model failed, try next model in inner loop
+                            continue; 
+                        }
                     }
+
+                    // 3. IF WE ARE HERE: The current Key failed for ALL models.
+                    // Instead of giving up, we rotate.
+                    
+                    // Show "Connecting to spirits..."
+                    setStatusText("Connecting to spirits...");
+                    
+                    // Wait 1 second so user sees the message
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+
+                    // Move to next key
+                    activeKeyIndex.current = (activeKeyIndex.current + 1) % totalKeys;
+                    attempts++;
                 }
-                return "The spirits are silent, Hukum. Please ask again.";
+
+                // If loop finishes, ALL keys failed.
+                return "The lantern oil has run dry. Please try again later.";
             };
 
             const handleSend = async () => {
@@ -269,16 +298,20 @@
                 setInput("");
                 setMessages(prev => [...prev, { sender: 'user', text: userText }]);
                 setIsTyping(true);
+                setStatusText(""); // Reset status
+                
                 const aiResponse = await callAI(userText);
+                
                 setMessages(prev => [...prev, { sender: 'bhopa', text: aiResponse }]);
                 setIsTyping(false);
+                setStatusText(""); // Clear status when done
             };
 
             return (
                 <div className="relative h-[100dvh] w-full flex items-center justify-center overflow-hidden">
                     <div className="texture-overlay"></div>
                     
-                    {/* Balanced Wave Animation */}
+                    {/* Dense Wave Animation */}
                     <FlowerWaveBackground />
                     
                     <motion.div 
@@ -296,8 +329,8 @@
                                 Main Scroll ↩
                             </a>
 
-                            {/* Interactive Bhopa Avatar */}
-                            <AnimatedBhopa isTyping={isTyping} />
+                            {/* Interactive Bhopa Avatar with Status Text */}
+                            <AnimatedBhopa isTyping={isTyping} statusText={statusText} />
                             
                             <h1 className="mt-5 font-display text-3xl tracking-wider text-[#D4AF37] drop-shadow-sm">The Digital Bhopa</h1>
                             <p className="font-serif text-sm opacity-80 tracking-widest uppercase mt-1">Interactive Storyteller</p>
