@@ -16,17 +16,16 @@
     <link href="https://fonts.googleapis.com/css2?family=Rozha+One&family=Sahitya:wght@400;700&family=Inter:wght@300;600&display=swap" rel="stylesheet">
 
     <style>
-        /* CSS VARIABLES: Traditional Phad Pigments */
         :root {
-            --bg-paper: #fdf6e3;    /* Base canvas color */
-            --phad-red: #8B0000;    /* Cinnabar mineral red */
-            --phad-yellow: #f59e0b; /* Orpiment mineral yellow */
-            --ink: #2c0b0e;         /* Charcoal ink for outlines */
+            --bg-paper: #fdf6e3;
+            --phad-red: #8B0000;
+            --phad-yellow: #f59e0b;
+            --ink: #2c0b0e;
         }
         
         body {
             margin: 0;
-            background-color: var(--bg-paper);
+            background-color: #120303 !important; 
             font-family: 'Sahitya', serif;
             color: var(--ink);
             overflow-x: hidden;
@@ -34,14 +33,12 @@
 
         .font-display { font-family: 'Rozha One', serif; }
 
-        /* OVERLAY: Global canvas texture to give a 'handmade' feel */
         .texture {
             position: fixed; inset: 0;
             background-image: url('https://www.transparenttextures.com/patterns/canvas-orange.jpeg');
             opacity: 0.4; pointer-events: none; z-index: 100; mix-blend-mode: multiply;
         }
 
-        /* ORNAMENTAL FRAME: Traditional Rajasthani border */
         .phad-frame {
             position: fixed; inset: 0; z-index: 9998; pointer-events: none;
             box-shadow: inset 0 0 0 12px var(--phad-red), inset 0 0 0 20px var(--phad-yellow);
@@ -53,15 +50,12 @@
 
         ::-webkit-scrollbar { width: 0px; background: transparent; }
 
-        /* TIMELINE LAYOUT: Vertical Scroll Engine */
         .timeline-wrapper { position: relative; width: 100%; background: var(--bg-paper); }
         .timeline-pane { width: 100vw; min-height: 100vh; position: relative; overflow: hidden; }
         
-        /* The "Red Thread" (Sutra) line that follows the user */
         .line-track { position: absolute; left: 50%; top: 0; width: 2px; height: 100%; transform: translateX(-50%); background: rgba(139, 0, 0, 0.1); }
         .line-fill { position: absolute; top: 0; left: 0; width: 100%; height: 0%; background: linear-gradient(to bottom, var(--phad-red), var(--phad-yellow)); }
         
-        /* Individual Story Tiles */
         .timeline-event-box { display: flex; width: 100%; margin: 250px 0; opacity: 0; transform: translateY(100px); }
         
         .timeline-card { 
@@ -72,7 +66,6 @@
             transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
         }
 
-        /* Highlight state for the card currently in view */
         .card-active {
             box-shadow: 0 0 40px 10px rgba(245, 158, 11, 0.3);
             border-left-color: var(--phad-yellow);
@@ -81,52 +74,41 @@
         }
 
         .card-active h3 { color: var(--phad-yellow); transition: color 0.4s ease; }
-/* 1. Force the foundation to be black immediately */
-html, body {
-    background-color: #120303 !important; 
-}
 
-/* 2. This class will be added by JS to reveal the cream theme later */
-body.ready-to-show {
-    background-color: #FBF2D8 !important; /* Your cream color */
-    transition: background-color 0.8s ease;
-}
+        body.ready-to-show {
+            background-color: #FBF2D8 !important;
+            transition: background-color 0.8s ease;
+        }
 
-/* 3. Keep content hidden until we are at the right scroll position */
-#root {
-    opacity: 0;
-    transition: opacity 0.6s ease;
-}
+        #root {
+            opacity: 0;
+            transition: opacity 0.6s ease;
+        }
 
-body.ready-to-show #root {
-    opacity: 1;
-}
+        body.ready-to-show #root {
+            opacity: 1;
+        }
 
-/* 4. The Curtain */
-#portal-curtain {
-    position: fixed;
-    inset: 0;
-    background: #120303;
-    z-index: 99999;
-    pointer-events: none;
-    opacity: 1; /* Start visible */
-}
+        #portal-curtain {
+            position: fixed;
+            inset: 0;
+            background: #120303;
+            z-index: 99999;
+            pointer-events: none;
+            opacity: 1;
+        }
     </style>
 </head>
 <body>
     <div id="root"></div>
+    <div id="portal-curtain"></div>
 
     <script type="text/babel">
-const { useRef, useEffect } = React;
+        const { useRef, useEffect } = React;
 
-// Robust check for Framer Motion CDN naming
-const motionData = window.Motion || window.framerMotion;
-if (!motionData) {
-    console.error("Framer Motion not found! Check CDN scripts.");
-}
-const { motion, useScroll, useTransform } = motionData || {};
+        const motionData = window.Motion || window.framerMotion;
+        const { motion, useScroll, useTransform } = motionData || {};
 
-        /* HERO SECTION: The grand opening with parallax numbering */
         const Hero = () => (
             <section className="h-screen flex flex-col items-center justify-center relative z-10 px-6">
                 <motion.div 
@@ -150,32 +132,27 @@ const { motion, useScroll, useTransform } = motionData || {};
             </section>
         );
 
-        /* HORIZONTAL SECTION: Move sideways while scrolling down */
         const HorizontalScroll = () => {
             const targetRef = useRef(null);
             const { scrollYProgress } = useScroll({ target: targetRef });
-            // Maps vertical scroll (0 to 1) to horizontal movement (0% to -75%)
             const x = useTransform(scrollYProgress, [0, 1], ["0%", "-75%"]);
             
             return (
                 <section ref={targetRef} className="relative h-[400vh]">
                     <div className="sticky top-0 h-screen overflow-hidden flex items-center">
                         <motion.div style={{ x }} className="flex h-full w-[400vw]">
-                            {/* Panel 1 */}
                             <div className="w-screen h-full flex items-center justify-center p-20 border-r border-[#8B0000]/10">
                                 <div className="max-w-3xl">
                                     <h2 className="font-display text-7xl text-[#8B0000] mb-8">The Keeper of Stories</h2>
                                     <p className="text-2xl text-gray-800 leading-relaxed font-serif italic">Like the Bhopas of Rajasthan who carry the temple of their deities on a scroll...</p>
                                 </div>
                             </div>
-                            {/* Panel 2 */}
                             <div className="w-screen h-full flex items-center justify-center p-20 border-r border-[#8B0000]/10">
                                 <div className="bg-[#8B0000] text-[#fdf6e3] p-16 rounded-sm shadow-[15px_15px_0px_0px_rgba(245,158,11,1)] max-w-2xl">
                                     <h3 className="font-display text-5xl mb-6 text-[#f59e0b]">Scrollytelling</h3>
                                     <p className="text-xl opacity-90 leading-relaxed">This website mimics the physical unfolding of the scroll...</p>
                                 </div>
                             </div>
-                            {/* Panel 3 */}
                             <div className="w-screen h-full flex flex-col items-center justify-center p-10 relative border-r border-[#8B0000]/10">
                                 <h2 className="font-display text-[20vw] text-[#8B0000] opacity-5 absolute">GROUP 10</h2>
                                 <div className="relative z-10 bg-[#fdf6e3]/90 p-20 border-4 border-double border-[#8B0000] max-w-5xl text-center shadow-2xl backdrop-blur-sm">
@@ -183,7 +160,6 @@ const { motion, useScroll, useTransform } = motionData || {};
                                     <h3 className="text-5xl font-display text-[#2c0b0e] mb-6">Discover India Program</h3>
                                 </div>
                             </div>  
-                            {/* Panel 4 */}
                             <div className="w-screen h-full flex items-center justify-center bg-[#8B0000] text-[#fdf6e3]">
                                 <div className="text-center">
                                     <h2 className="font-display text-8xl mb-8">The Process</h2>
@@ -196,25 +172,18 @@ const { motion, useScroll, useTransform } = motionData || {};
             );
         };
 
-        /* TIMELINE SECTION: The 8-Step Interactive Journey */
         const Timeline = () => {
             useEffect(() => {
                 gsap.registerPlugin(ScrollTrigger);
-                
-                // Animates the red thread growth as user scrolls
                 gsap.to("#timelineFill", {
                     height: "100%", ease: "none",
                     scrollTrigger: { trigger: ".timeline-pane", start: "top center", end: "bottom center", scrub: 1 }
                 });
 
-                // Loop through each step box to apply individual animations
                 gsap.utils.toArray(".timeline-event-box").forEach((box) => {
                     const card = box.querySelector(".timeline-card");
-                    
-                    // Entrance animation (Fade up)
                     gsap.to(box, { opacity: 1, y: 0, duration: 1, scrollTrigger: { trigger: box, start: "top 90%" } });
 
-                    // Focus Detection (Adds the golden glow when card is central)
                     ScrollTrigger.create({
                         trigger: box,
                         start: "top 60%", 
@@ -225,7 +194,6 @@ const { motion, useScroll, useTransform } = motionData || {};
                         onLeaveBack: () => card.classList.remove("card-active")
                     });
                     
-                    // 3D TILT EFFECT: Calculates mouse position relative to card center
                     box.addEventListener("mousemove", (e) => {
                         const rect = card.getBoundingClientRect();
                         const x = (e.clientX - rect.left - rect.width/2) / 25;
@@ -238,7 +206,6 @@ const { motion, useScroll, useTransform } = motionData || {};
                 });
             }, []);
 
-            // Data array for the 8 Process Steps
             const steps = [
                 { id: "01", title: "Kharat", desc: "The ritual of boiling and starching the cloth begins.", link: "step1.html", side: "start" },
                 { id: "02", title: "Rang", desc: "Mining natural pigments and precious mineral stones.", link: "step2.html", side: "end" },
@@ -251,7 +218,7 @@ const { motion, useScroll, useTransform } = motionData || {};
             ];
 
             return (
-                <section className="timeline-wrapper">
+                <section className="timeline-wrapper" id="timeline">
                     <div className="timeline-pane">
                         <div className="line-track"><div className="line-fill" id="timelineFill"></div></div>
                         <div className="max-w-6xl mx-auto py-32">
@@ -270,7 +237,6 @@ const { motion, useScroll, useTransform } = motionData || {};
             );
         };
 
-        /* TEAM SECTION: Member grid with hover-zoom effects */
         const Team = () => {
             const teamMembers = [
                 { name: "Vivek Ray", role: "Group Representative (GR)", img: "vivek.jpeg" },
@@ -289,7 +255,7 @@ const { motion, useScroll, useTransform } = motionData || {};
             ];
 
             return (
-                <section className="min-h-screen bg-[#2c0b0e] text-[#fdf6e3] py-32 px-6 relative z-20">
+                <section className="min-h-screen bg-[#2c0b0e] text-[#fdf6e3] py-32 px-6 relative z-20" id="team">
                     <div className="container mx-auto max-w-7xl">
                         <div className="flex flex-col md:flex-row justify-between items-end mb-24 border-b border-[#fdf6e3]/20 pb-8">
                             <h2 className="font-display text-7xl">Our Team</h2>
@@ -313,10 +279,8 @@ const { motion, useScroll, useTransform } = motionData || {};
             );
         };
 
-        /* MAIN APP: Controller for frame and general page composition */
         const App = () => {
             const { scrollYProgress } = useScroll();
-            // Fades out the main frame as user scrolls away from hero
             const frameOpacity = useTransform(scrollYProgress, [0, 0.05], [1, 0]);
             
             return (
@@ -338,57 +302,46 @@ const { motion, useScroll, useTransform } = motionData || {};
                         </svg>
                     </motion.a>
                   <footer className="bg-[#120303] text-[#fdf6e3] pt-20 pb-10 relative z-10 border-t border-[#f59e0b]/30">
-    <div className="max-w-7xl mx-auto px-10">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-16 mb-16">
-            
-            {/* Column 1: Project Identity */}
-            <div className="flex flex-col space-y-4">
-                <h3 className="font-display text-4xl text-[#f59e0b]">Phad Painting</h3>
-                <p className="font-serif text-sm leading-relaxed opacity-70 max-w-sm">
-                    Preserving the traditional scroll art of Rajasthan through digital scrollytelling. A tribute to the Bhopa community and the legendary artists of Shahpura.
-                </p>
-            </div>
-
-            {/* Column 2: Navigation / Quick Links */}
-            <div className="flex flex-col space-y-4">
-                <h4 className="text-[#f59e0b] uppercase tracking-widest text-xs font-bold">The Journey</h4>
-                <div className="grid grid-cols-2 gap-2 text-sm opacity-60 font-serif">
-                    <a href="#" className="hover:text-[#f59e0b] transition-colors">Home</a>
-                    <a href="#timeline" className="hover:text-[#f59e0b] transition-colors">The Process</a>
-                    <a href="#team" className="hover:text-[#f59e0b] transition-colors">Our Team</a>
-                    <a href="chatbot.html" className="hover:text-[#f59e0b] transition-colors">Art Bot</a>
-                </div>
-            </div>
-
-            {/* Column 3: Institution Branding */}
-            <div className="flex flex-col space-y-4 md:items-end md:text-right">
-                <h4 className="text-[#f59e0b] uppercase tracking-widest text-xs font-bold">Institutional Partner</h4>
-                <p className="font-display text-2xl opacity-90">Flame University</p>
-                <p className="font-serif text-xs tracking-widest opacity-50 uppercase">
-                    Discover India Program <br /> Group 10 | 2025-2026
-                </p>
-            </div>
-        </div>
-
-        {/* Bottom Bar: Copyright & Decorative Line */}
-        <div className="border-t border-[#fdf6e3]/10 pt-8 flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-            <p className="text-[10px] tracking-[0.3em] uppercase opacity-40">
-                © 2025-2026 Phad: The Living Scroll. All Rights Reserved.
-            </p>
-            
-            {/* Subtle Rajasthani Motif Icon (SVG) */}
-            <div className="text-[#f59e0b] opacity-40">
-                <svg width="30" height="30" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12,2L4.5,20.29L5.21,21L12,18L18.79,21L19.5,20.29L12,2Z" />
-                </svg>
-            </div>
-
-            <p className="text-[10px] tracking-[0.3em] uppercase opacity-40 italic">
-                Crafting Traditions Digitally
-            </p>
-        </div>
-    </div>
-</footer>
+                    <div className="max-w-7xl mx-auto px-10">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-16 mb-16">
+                            <div className="flex flex-col space-y-4">
+                                <h3 className="font-display text-4xl text-[#f59e0b]">Phad Painting</h3>
+                                <p className="font-serif text-sm leading-relaxed opacity-70 max-w-sm">
+                                    Preserving the traditional scroll art of Rajasthan through digital scrollytelling. A tribute to the Bhopa community and the legendary artists of Shahpura.
+                                </p>
+                            </div>
+                            <div className="flex flex-col space-y-4">
+                                <h4 className="text-[#f59e0b] uppercase tracking-widest text-xs font-bold">The Journey</h4>
+                                <div className="grid grid-cols-2 gap-2 text-sm opacity-60 font-serif">
+                                    <a href="#" className="hover:text-[#f59e0b] transition-colors">Home</a>
+                                    <a href="#timeline" className="hover:text-[#f59e0b] transition-colors">The Process</a>
+                                    <a href="#team" className="hover:text-[#f59e0b] transition-colors">Our Team</a>
+                                    <a href="chatbot.html" className="hover:text-[#f59e0b] transition-colors">Art Bot</a>
+                                </div>
+                            </div>
+                            <div className="flex flex-col space-y-4 md:items-end md:text-right">
+                                <h4 className="text-[#f59e0b] uppercase tracking-widest text-xs font-bold">Institutional Partner</h4>
+                                <p className="font-display text-2xl opacity-90">Flame University</p>
+                                <p className="font-serif text-xs tracking-widest opacity-50 uppercase">
+                                    Discover India Program <br /> Group 10 | 2025-2026
+                                </p>
+                            </div>
+                        </div>
+                        <div className="border-t border-[#fdf6e3]/10 pt-8 flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+                            <p className="text-[10px] tracking-[0.3em] uppercase opacity-40">
+                                © 2025-2026 Phad: The Living Scroll. All Rights Reserved.
+                            </p>
+                            <div className="text-[#f59e0b] opacity-40">
+                                <svg width="30" height="30" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M12,2L4.5,20.29L5.21,21L12,18L18.79,21L19.5,20.29L12,2Z" />
+                                </svg>
+                            </div>
+                            <p className="text-[10px] tracking-[0.3em] uppercase opacity-40 italic">
+                                Crafting Traditions Digitally
+                            </p>
+                        </div>
+                    </div>
+                </footer>
                 </div>
             );
         };
@@ -396,87 +349,72 @@ const { motion, useScroll, useTransform } = motionData || {};
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
     </script>
-<div id="portal-curtain"></div>
 
-<script>
-(function() {
-    // 1. Force the browser to stop its default scroll restoration
-    if ('scrollRestoration' in history) {
-        history.scrollRestoration = 'manual';
-    }
-
-    const returnStep = sessionStorage.getItem('returnToStep');
-    const body = document.body;
-    const curtain = document.getElementById('portal-curtain');
-
-    const revealPage = () => {
-        body.classList.add('ready-to-show');
-        if (curtain) {
-            curtain.style.opacity = "0";
-            setTimeout(() => { curtain.style.display = "none"; }, 800);
-        }
-    };
-
-    function handleScroll(step) {
-        let attempts = 0;
-        const maxAttempts = 100; // Try for up to 5 seconds
-
-        const checkExist = setInterval(() => {
+    <script>
+    (function() {
+        // High-res polling for the elements to ensure React has mounted
+        const checkReady = () => {
+            const returnStep = sessionStorage.getItem('returnToStep');
+            const body = document.body;
+            const curtain = document.getElementById('portal-curtain');
             const cards = document.querySelectorAll('.timeline-card');
-            attempts++;
 
-            // Wait until React has rendered the cards
-            if (cards.length > 0) {
-                clearInterval(checkExist);
+            // If we are waiting for a step but cards aren't here, keep polling
+            if (returnStep && cards.length === 0) {
+                requestAnimationFrame(checkReady);
+                return;
+            }
+
+            // Execute Scroll Logic
+            if (returnStep) {
+                let targetElement = null;
+                const stepNum = returnStep.replace('step', '').padStart(2, '0');
                 
-                const stepNum = step.replace('step', '').padStart(2, '0');
-                let targetElement = Array.from(cards).find(card => 
-                    card.innerText.includes("Step " + stepNum)
-                );
+                cards.forEach(card => {
+                    if (card.innerText.includes("Step " + stepNum)) targetElement = card;
+                });
 
                 if (targetElement) {
                     const rect = targetElement.getBoundingClientRect();
                     const topPos = rect.top + window.pageYOffset - (window.innerHeight / 4);
-
-                    if (step === 'step1') {
-                        // For Step 1: Start at top, then glide down smoothly
-                        window.scrollTo(0, 0);
-                        revealPage();
+                    
+                    if (returnStep === 'step1') {
+                        // For Step 1: Reveal first, then smooth scroll
+                        body.classList.add('ready-to-show');
+                        curtain.style.opacity = "0";
+                        window.scrollTo({ top: 0, behavior: 'auto' });
                         setTimeout(() => {
                             window.scrollTo({ top: topPos, behavior: 'smooth' });
                             sessionStorage.removeItem('returnToStep');
-                        }, 600);
+                        }, 300);
                     } else {
-                        // For other steps: Jump instantly while black, then fade in
+                        // For other steps: Jump immediately while black, then reveal
                         window.scrollTo({ top: topPos, behavior: 'auto' });
                         setTimeout(() => {
-                            revealPage();
+                            body.classList.add('ready-to-show');
+                            curtain.style.opacity = "0";
                             sessionStorage.removeItem('returnToStep');
-                        }, 300);
+                        }, 400);
                     }
                 } else {
-                    revealPage(); // Fallback if specific card not found
+                    // Fallback if target lost
+                    body.classList.add('ready-to-show');
+                    curtain.style.opacity = "0";
                 }
+            } else {
+                // Default Entry
+                body.classList.add('ready-to-show');
+                curtain.style.opacity = "0";
             }
+        };
 
-            if (attempts > maxAttempts) {
-                clearInterval(checkExist);
-                revealPage();
-            }
-        }, 50);
-    }
-
-    // Initialize Logic
-    if (returnStep) {
-        handleScroll(returnStep);
-    } else {
-        // Normal first-time visit
-        window.scrollTo(0, 0);
-        revealPage();
-    }
-})();
-</script>
-</body>
-</html>
+        // Start checking once DOM content is parsed
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', checkReady);
+        } else {
+            checkReady();
+        }
+    })();
+    </script>
 </body>
 </html>
