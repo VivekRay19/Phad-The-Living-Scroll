@@ -105,7 +105,15 @@
             "google/gemini-2.0-flash-exp:free", "mistralai/mistral-7b-instruct:free", "meta-llama/llama-3-8b-instruct:free",
             "microsoft/phi-3-mini-128k-instruct:free", "google/gemma-2-9b-it:free", "huggingfaceh4/zephyr-7b-beta:free"
         ];
-        const SYSTEM_PROMPT = `You are "The Digital Bhopa", a traditional Rajasthani storyteller. RULES: 1. CREATOR: Vivek Ray from Flame University. 2. TONE: Warm, use "Hukum", "Sa". 3. UNKNOWN: "Maaf karo sa, I don't know this." 4. BREVITY: Max 3 sentences.`;
+        
+        // --- UPDATED SYSTEM PROMPT: STRICT ENGLISH ---
+        const SYSTEM_PROMPT = `You are "The Digital Bhopa", a traditional Rajasthani storyteller. 
+        RULES: 
+        1. LANGUAGE: Speak ONLY in ENGLISH. Do not use Hindi sentences. 
+        2. CREATOR: Vivek Ray from Flame University. 
+        3. TONE: Warm and respectful. You may use occasional honorifics like "Hukum" or "Sa" for flavor, but the explanation must be English. 
+        4. UNKNOWN: "Forgive me Hukum, that story is not in my Phad." 
+        5. BREVITY: Keep answers short (Max 3 sentences).`;
 
         // ============================================
         // 2. ANIMATION COMPONENTS
@@ -158,7 +166,7 @@
                     const centerX = rect.left + rect.width / 2;
                     const centerY = rect.top + rect.height / 2;
 
-                    // INCREASED DAMPENING to keep him inside
+                    // Dampening = 90 (Stays inside circle)
                     const dampen = 90; 
                     const moveX = (e.clientX - centerX) / dampen;
                     const moveY = (e.clientY - centerY) / dampen;
@@ -220,7 +228,7 @@
         const ChatApp = () => {
             const [messages, setMessages] = useState([{ sender: 'bhopa', text: 'Khamma Ghani, Hukum! I am the Digital Bhopa. What story shall we unravel today?' }]);
             const [isTyping, setIsTyping] = useState(false);
-            const [statusText, setStatusText] = useState(""); // New State for connection status
+            const [statusText, setStatusText] = useState(""); 
             const [input, setInput] = useState("");
             const bottomRef = useRef(null);
             const activeKeyIndex = useRef(0);
@@ -232,14 +240,12 @@
                 const totalKeys = API_KEYS_LIST.length;
                 let attempts = 0;
 
-                // Loop through keys until one works or we run out of keys
                 while (attempts < totalKeys) {
                     // 1. Get current key
                     let apiKey;
                     try { 
                         apiKey = atob(API_KEYS_LIST[activeKeyIndex.current]); 
                     } catch(e) { 
-                        // If key is broken, skip to next immediately
                         activeKeyIndex.current = (activeKeyIndex.current + 1) % totalKeys;
                         attempts++;
                         continue;
@@ -259,36 +265,25 @@
 
                             const data = await response.json();
 
-                            // If we see an error object or bad status, throw to trigger catch block below
                             if (!response.ok || data.error) {
                                 throw new Error("API Error"); 
                             }
                             
-                            // If successful, return immediately!
                             if (data.choices && data.choices[0]) {
                                 return data.choices[0].message.content.replace(/<s>/g, "").replace(/<\/s>/g, "").trim();
                             }
                         } catch (err) {
-                            // Model failed, try next model in inner loop
                             continue; 
                         }
                     }
 
-                    // 3. IF WE ARE HERE: The current Key failed for ALL models.
-                    // Instead of giving up, we rotate.
-                    
-                    // Show "Connecting to spirits..."
+                    // 3. Current Key failed. Show status and rotate.
                     setStatusText("Connecting to spirits...");
-                    
-                    // Wait 1 second so user sees the message
                     await new Promise(resolve => setTimeout(resolve, 1000));
-
-                    // Move to next key
                     activeKeyIndex.current = (activeKeyIndex.current + 1) % totalKeys;
                     attempts++;
                 }
 
-                // If loop finishes, ALL keys failed.
                 return "The lantern oil has run dry. Please try again later.";
             };
 
@@ -298,13 +293,13 @@
                 setInput("");
                 setMessages(prev => [...prev, { sender: 'user', text: userText }]);
                 setIsTyping(true);
-                setStatusText(""); // Reset status
+                setStatusText(""); 
                 
                 const aiResponse = await callAI(userText);
                 
                 setMessages(prev => [...prev, { sender: 'bhopa', text: aiResponse }]);
                 setIsTyping(false);
-                setStatusText(""); // Clear status when done
+                setStatusText(""); 
             };
 
             return (
