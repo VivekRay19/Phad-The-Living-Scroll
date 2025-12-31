@@ -13,7 +13,7 @@ The experience is broken into 8 distinct chapters, each utilizing different anim
 * **Step 5 (Shringar):** A "Zoom & Fade" sequence that highlights intricate details.
 * **Step 8 (Finale):** A particle-based ending sequence representing the eternal nature of the art.
 
-### 🤖 "Ask Bhopa" Chatbot
+### 🤖 "The Digital Bhopa" Chatbot
 * **Tech:** Built with **React.js**, **Framer Motion**, and **Tailwind CSS**.
 * **Function:** Simulates a conversation with a traditional *Bhopa* (priest-singer), allowing users to ask context-aware questions about the history and folklore of Phad.
 
